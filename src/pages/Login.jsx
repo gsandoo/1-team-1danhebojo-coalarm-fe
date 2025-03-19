@@ -2,10 +2,10 @@
 import React from 'react';
 
 // 코인 이미지 임포트
-import bitcoin1 from '../assets/images/coin/Bitcoin-1.png';
-import bitcoin from '../assets/images/coin/Bitcoin.png';
-import goldCoins1 from '../assets/images/coin/Gold Coins-1.png';
-import goldCoins from '../assets/images/coin/Gold Coins.png';
+import bitcoin1 from '../assets/images/login/Bitcoin-1.png';
+import bitcoin from '../assets/images/login/Bitcoin.png';
+import goldCoins1 from '../assets/images/login/Gold Coins-1.png';
+import goldCoins from '../assets/images/login/Gold Coins.png';
 
 function Login() {
   return (
