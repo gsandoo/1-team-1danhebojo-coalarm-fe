@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Discord from './pages/Discord';
 import Dashboard from './pages/Dashboard';
+import MyPage from './pages/Mypage';
+import Header from './components/Header';
 
 // 가이드 페이지 임포트
 import FearGreedGuide from './pages/guides/FearGreedGuide';
@@ -16,11 +18,13 @@ import WhaleTransactionsGuide from './pages/guides/WhaleTransactionsGuide';
 function App() {
   return (
     <Router>
-      <div className="w-screen h-screen overflow-hidden bg-[#0E106C]">
+      <Header/>
+      <div className="w-screen h-screen overflow-hidden bg-gradient-to-br from-[#0A1184] via-[#341684] to-[#0F5BAF]">
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/discord" element={<Discord />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/mypage" element={<MyPage />}></Route>
           
           {/* 가이드 라우트 */}
           <Route path="/guide/fear-greed" element={<FearGreedGuide />} />

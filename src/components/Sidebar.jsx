@@ -28,11 +28,8 @@ function Sidebar() {
   ];
 
   return (
-    <div className="w-56 bg-[#0a0d50] flex flex-col h-screen overflow-hidden flex-shrink-0">
-      <div className="p-4 flex items-center">
-        <span className="text-white font-medium text-xl">coalarm</span>
-      </div>
-      
+    <div className="w-[300px] bg-[#0a0d50] flex flex-col h-screen overflow-hidden flex-shrink-0">
+
       <div className="flex flex-col items-center mt-6 mb-8">
         <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden">
           <img src={userIcon} alt="User" className="w-full h-full object-cover" />
@@ -54,7 +51,7 @@ function Sidebar() {
               <path fillRule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z" clipRule="evenodd" />
               <path d="M10 4a1 1 0 011 1v5a1 1 0 01-1 1H6a1 1 0 010-2h3V5a1 1 0 011-1z" />
             </svg>
-            <Link to="/settings" className="w-full">프로필 설정</Link>
+            <Link to="/mypage" className="w-full">프로필 설정</Link>
           </li>
           <li className={`px-4 py-3 text-white flex items-center ${location.pathname === '/notifications' ? 'bg-blue-900' : ''}`}>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor">
