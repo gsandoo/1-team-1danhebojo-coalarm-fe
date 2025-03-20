@@ -28,11 +28,8 @@ function Sidebar() {
   ];
 
   return (
-    <div className="w-56 bg-[#0a0d50] flex flex-col h-screen overflow-hidden flex-shrink-0">
-      <div className="p-4 flex items-center">
-        <span className="text-white font-medium text-xl">coalarm</span>
-      </div>
-      
+    <div className="w-[300px] bg-[#0a0d50] flex flex-col h-screen overflow-hidden flex-shrink-0">
+
       <div className="flex flex-col items-center mt-6 mb-8">
         <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden">
           <img src={userIcon} alt="User" className="w-full h-full object-cover" />

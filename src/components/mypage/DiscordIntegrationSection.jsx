@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconSettings } from '../../pages/Icons';
+import { IconSettings } from '../../assets/images/mypage/Icons';
 
 function SlackIntegrationSection() {
   return (

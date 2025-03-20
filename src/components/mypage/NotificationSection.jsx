@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconVolume, IconPagination } from '../../pages/Icons';
+import { IconVolume, IconPagination } from '../../assets/images/mypage/Icons';
 
 function NotificationSection({ notifications, currentPage, setCurrentPage }) {
   return (
