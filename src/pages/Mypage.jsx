@@ -3,10 +3,15 @@ import Sidebar from '../components/Sidebar';
 import ProfileAvatar from '../components/mypage/ProfileAvatar';
 import NotificationSection from '../components/mypage/NotificationSection';
 import DiscordIntegrationSection from '../components/mypage/DiscordIntegrationSection';
+import WithdrawalConfirmationModal from '../components/mypage/WithdrawalConfirmationModal';
+
+// 사이드바 너비 상수 정의 (Sidebar 컴포넌트와 일치해야 함)
+const SIDEBAR_WIDTH = 228; // px
 
 function MyPage() {
   const [currentPage, setCurrentPage] = useState(3);
   const [profileImage, setProfileImage] = useState(null);
+  const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
   
   // 목업 데이터
   const userInfo = {
@@ -36,9 +41,27 @@ function MyPage() {
     setProfileImage(newImage);
   };
 
+  const handleWithdrawalClick = () => {
+    setShowWithdrawalModal(true);
+  };
+
+  const handleCloseWithdrawalModal = () => {
+    setShowWithdrawalModal(false);
+  };
+
+  const handleConfirmWithdrawal = () => {
+    // 회원 탈퇴 로직 구현
+    console.log("회원 탈퇴 처리");
+    setShowWithdrawalModal(false);
+    // 여기에 회원 탈퇴 후 로그인 페이지로 리다이렉트 등의 로직 추가
+  };
+
   return (
     <div className="flex h-screen w-full text-white">
-      <Sidebar/>
+      {/* 사이드바 - 고정 너비 */}
+      <div className="w-[228px] flex-shrink-0">
+        <Sidebar/>
+      </div>
 
       {/* 메인 컨텐츠 */}
       <div className="flex-grow p-6 flex flex-col items-center">
@@ -95,15 +118,28 @@ function MyPage() {
             setCurrentPage={setCurrentPage}
           />
 
-          {/* 슬랙 연동 섹션 */}
+          {/* 디스코드 연동 섹션 */}
           <DiscordIntegrationSection />
 
-          {/* 저작권 정보 */}
+          {/* 회원 탈퇴 링크 */}
           <div className="mt-[40px] text-center">
-            <span className="text-xs text-blue-300 hover:underline cursor-pointer">회원 탈퇴하기</span>
+            <span 
+              className="text-xs text-blue-300 hover:underline cursor-pointer"
+              onClick={handleWithdrawalClick}
+            >
+              회원 탈퇴하기
+            </span>
           </div>
         </div>
       </div>
+
+      {/* 회원 탈퇴 확인 모달 - 사이드바를 고려한 위치 */}
+      {showWithdrawalModal && (
+        <WithdrawalConfirmationModal 
+          onClose={handleCloseWithdrawalModal}
+          onConfirm={handleConfirmWithdrawal}
+        />
+      )}
     </div>
   );
 }
