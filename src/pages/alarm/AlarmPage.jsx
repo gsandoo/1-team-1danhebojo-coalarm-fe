@@ -1,14 +1,13 @@
 // src/pages/AlarmPage.jsx
 import Sidebar from "../../components/Sidebar.jsx";
 import ToggleSwitch from "../../components/alarm/ToggleSwitch.jsx";
-import {useState} from "react";
+import React, {useState} from "react";
 import AlarmCard from "../../components/alarm/AlarmCard.jsx";
 
 const AlarmPage = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [selectedCoins, setSelectedCoins] = useState([]);
     const [sortOption, setSortOption] = useState('최신순');
-
     const sortOptions = ['최신순', '등록순']
 
     const coins = [
@@ -129,6 +128,9 @@ const AlarmPage = () => {
                     <AlarmCard />
                     <AlarmCard />
                 </div>
+
+                {/* 알람 삭제 확인 모달 - 사이드바를 고려한 위치 */}
+                {/*<AlarmDeleteModal />*/}
             </div>
         </div>
     );
