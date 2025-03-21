@@ -1,7 +1,12 @@
-// src/components/indicators/LongShortRatio.jsx
 import React from 'react';
 
 function LongShortRatio({ longRatio, shortRatio }) {
+  const formattedLongRatio = parseFloat(longRatio).toFixed(1);
+  const formattedShortRatio = parseFloat(shortRatio).toFixed(1);
+  
+  const marketSentiment = longRatio > shortRatio ? '상승 예상' : '하락 예상';
+  const sentimentColor = longRatio > shortRatio ? 'text-green-500' : 'text-red-500';
+
   return (
     <div className="bg-blue-900 rounded-lg p-4 relative">
       <div className="flex justify-between items-center mb-2">
@@ -11,18 +16,22 @@ function LongShortRatio({ longRatio, shortRatio }) {
         </svg>
       </div>
       
-      <div className="mt-4">
+      <div className="mt-2 mb-2 text-center">
+        <span className={`text-sm ${sentimentColor}`}>{marketSentiment}</span>
+      </div>
+      
+      <div className="mt-2">
         {/* 진행 바 */}
         <div className="h-5 w-full bg-gray-700 rounded-full overflow-hidden mb-3">
           <div 
             className="h-full bg-green-500 rounded-l-full" 
-            style={{ width: `${longRatio}%` }}>
+            style={{ width: `${formattedLongRatio}%` }}>
           </div>
         </div>
         
         <div className="flex justify-between items-center">
           <div>
-            <span className="text-green-500 text-xs font-bold">LONG {longRatio}%</span>
+            <span className="text-green-500 text-xs font-bold">LONG {formattedLongRatio}%</span>
           </div>
           <div className="text-center">
             <button className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded-md">
@@ -30,7 +39,7 @@ function LongShortRatio({ longRatio, shortRatio }) {
             </button>
           </div>
           <div>
-            <span className="text-red-500 text-xs font-bold">SHORT {shortRatio}%</span>
+            <span className="text-red-500 text-xs font-bold">SHORT {formattedShortRatio}%</span>
           </div>
         </div>
       </div>
