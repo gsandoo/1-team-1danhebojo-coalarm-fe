@@ -11,18 +11,21 @@ import dashboardImage from '../assets/images/discord/dashboard.png';
 import DiscordWebhookModal from '../components/modals/DiscordWebhookModal';
 import Toast from '../components/common/Toast';
 
+// 환경 변수 임포트
+import { API_URL, TOKEN } from '../config/environment';
+
 function Discord() {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-    // 토스트 메시지 상태
-    const [toast, setToast] = useState({
-      show: false,
-      message: '',
-      type: 'success'
-    });
+  // 토스트 메시지 상태
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success'
+  });
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -46,7 +49,7 @@ function Discord() {
     });
   };
 
-      // 토스트 메시지 닫기 함수
+  // 토스트 메시지 닫기 함수
   const closeToast = () => {
     setToast(prev => ({
       ...prev,
@@ -59,11 +62,6 @@ function Discord() {
     setError(null);
 
     try {
-      const API_URL = 'http://localhost:8080/api/v1';
-      
-      // 하드코딩된 토큰
-      const TOKEN = '';
-
       console.log('디스코드 웹훅 연동 시도:', webhookUrl);
       
       const response = await fetch(`${API_URL}/user/discord`, {
@@ -101,7 +99,7 @@ function Discord() {
       // 토스트 메시지가 표시된 후 약간의 지연 시간을 두고 대시보드로 이동
       setTimeout(() => {
         navigate('/dashboard');
-      }, 2000);
+      }, 1000);
       
     } catch (err) {
       console.error('Discord webhook 연동 오류:', err);
