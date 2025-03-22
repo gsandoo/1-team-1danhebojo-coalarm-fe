@@ -1,7 +1,7 @@
 import React from 'react';
 import { IconSettings } from '../../assets/images/mypage/Icons';
 
-function SlackIntegrationSection() {
+function DiscordIntegrationSection() {
   return (
     <div className="bg-[#081159] backdrop-blur-sm rounded-3xl p-6 w-[922px] h-[124px] flex flex-col justify-between">
       {/* 제목 부분 - 공지사항과 동일한 스타일 */}
@@ -27,4 +27,4 @@ function SlackIntegrationSection() {
   );
 }
 
-export default SlackIntegrationSection;
+export default DiscordIntegrationSection;
