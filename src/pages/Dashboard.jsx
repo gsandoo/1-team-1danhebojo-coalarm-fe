@@ -1,7 +1,7 @@
-// src/pages/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
+import { useParams } from 'react-router-dom'; // 필요시 라이브러리 설치 필요
 
 // 지표 컴포넌트 import
 import FearGreedIndex from '../components/indicators/FearGreedIndex';
@@ -15,12 +15,16 @@ import TransactionList from '../components/transactions/TransactionList';
 import bitcoinIcon from '../assets/images/dashboard/bitcoin.png';
 
 function Dashboard() {
+  const { coinId = 1 } = useParams(); // URL에서 coinId 파라미터 추출, 기본값 1
+
   // API에서 받아올 데이터를 위한 상태 관리
+  const [coinData, setCoinData] = useState({ symbol: 'BTC', name: '비트코인' });
   const [fearGreedIndex, setFearGreedIndex] = useState({ bull: 55.0, bear: 50.0 });
   const [macdData, setMacdData] = useState({ 
     macd: -987.29, 
     signal: -687.23, 
-    histogram: -489.38 
+    histogram: -489.38,
+    trend: 'FALL'
   });
   const [rsiData, setRsiData] = useState(45.7);
   const [shortLongData, setShortLongData] = useState({ longRatio: 52.39, shortRatio: 47.61 });
@@ -35,34 +39,52 @@ function Dashboard() {
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // 공포 탐욕 지수 가져오기
-        const fearGreedResponse = await axios.get('https://api.example.com/fear-greed-index');
-        setFearGreedIndex({
-          bull: fearGreedResponse.data.bull || 55.0,
-          bear: fearGreedResponse.data.bear || 50.0
-        });
+        // 통합 대시보드 API 요청
+        const dashboardResponse = await axios.get(`/dashboard/${coinId}/index`);
         
-        // MACD 데이터 가져오기
-        const macdResponse = await axios.get('https://api.example.com/btc/macd');
-        setMacdData({
-          macd: macdResponse.data.macd || -987.29,
-          signal: macdResponse.data.signal || -687.23,
-          histogram: macdResponse.data.histogram || -489.38
-        });
-        
-        // RSI 데이터 가져오기
-        const rsiResponse = await axios.get('https://api.example.com/btc/rsi');
-        setRsiData(rsiResponse.data.rsi || 45.7);
-        
-        // 공매수/공매도 비율 가져오기
-        const shortLongResponse = await axios.get('https://api.example.com/btc/short-long-ratio');
-        setShortLongData({
-          longRatio: shortLongResponse.data.longRatio || 52.39,
-          shortRatio: shortLongResponse.data.shortRatio || 47.61
-        });
+        // 요청 성공 및 데이터 확인
+        if (dashboardResponse.data.status === "success" && dashboardResponse.data.data) {
+          const dashboardData = dashboardResponse.data.data;
+          
+          // 코인 정보 설정
+          if (dashboardData.coin) {
+            setCoinData({
+              coinId: dashboardData.coin.coinId,
+              symbol: dashboardData.coin.symbol,
+              name: dashboardData.coin.name
+            });
+          }
+          
+          // RSI 데이터 설정
+          if (dashboardData.rsi !== undefined) {
+            setRsiData(dashboardData.rsi);
+          }
+          
+          // MACD 데이터 설정
+          if (dashboardData.macd) {
+            setMacdData({
+              macd: dashboardData.macd.value || -987.29,
+              signal: dashboardData.macd.signal || -687.23,
+              histogram: dashboardData.macd.histogram || -489.38,
+              trend: dashboardData.macd.trend || 'FALL'
+            });
+          }
+          
+          // 롱/숏 비율 데이터 설정
+          if (dashboardData.ratio) {
+            setShortLongData({
+              longRatio: dashboardData.ratio.long || 52.39,
+              shortRatio: dashboardData.ratio.short || 47.61
+            });
+          }
+        }
         
         // 김치 프리미엄 데이터 가져오기
-        const kimchiPremiumResponse = await axios.get('https://api.example.com/kimchi-premium');
+        const kimchiPremiumResponse = await axios.get('https://dev-server.store/?offset=0&limit=5', {
+            headers: {
+                'Authorization': `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzOTY2MzYzODM4IiwiaWF0IjoxNzQyNTQzOTY2LCJleHAiOjE3NDI2MzAzNjZ9.yMRdkmreY1eIRfigqGIX2u0uqmd0-4IjR_2nui-w-3g`
+            }
+        });
         setKimchiPremiumData(kimchiPremiumResponse.data.markets || mockKimchiPremiumData);
         
         // 최근 거래 내역 가져오기
@@ -92,7 +114,7 @@ function Dashboard() {
     const intervalId = setInterval(fetchData, 5000);
     
     return () => clearInterval(intervalId);
-  }, []);
+  }, [coinId]); // coinId가 변경될 때마다 데이터 재요청
   
   // 김치 프리미엄 예시 데이터
   const mockKimchiPremiumData = [
@@ -142,10 +164,10 @@ function Dashboard() {
         
         {/* 지표 카드 그리드 */}
         <div className="grid grid-cols-5 gap-4 mb-5">
-          {/* 공포 & 탐욕 지수 (Bull) */}
+          {/* 공포 & 탐욕 지수 (Bull) - 아직 API에서 제공되지 않음 */}
           <FearGreedIndex label="공격" value={fearGreedIndex.bull} />
           
-          {/* 공포 & 탐욕 지수 (Bear) */}
+          {/* 공포 & 탐욕 지수 (Bear) - 아직 API에서 제공되지 않음 */}
           <FearGreedIndex label="방어" value={fearGreedIndex.bear} />
           
           {/* MACD */}
@@ -153,6 +175,7 @@ function Dashboard() {
             macd={macdData.macd}
             signal={macdData.signal}
             histogram={macdData.histogram}
+            trend={macdData.trend}
           />
           
           {/* RSI */}
@@ -174,8 +197,8 @@ function Dashboard() {
                   <div className="mr-2 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center">
                     <span className="text-black font-bold text-xs">₿</span>
                   </div>
-                  <h3 className="text-white font-medium">비트코인</h3>
-                  <span className="text-gray-300 ml-2 text-sm">BTC/KRW</span>
+                  <h3 className="text-white font-medium">{coinData.name}</h3>
+                  <span className="text-gray-300 ml-2 text-sm">{coinData.symbol}/KRW</span>
                 </div>
               </div>
               <div className="bg-blue-950 h-96 rounded-md flex items-center justify-center">
