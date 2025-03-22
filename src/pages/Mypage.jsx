@@ -6,7 +6,7 @@ import DiscordIntegrationSection from '../components/mypage/DiscordIntegrationSe
 import WithdrawalConfirmationModal from '../components/mypage/WithdrawalConfirmationModal';
 
 import { useSelector,useDispatch } from 'react-redux';
-import { setValue } from '../redux/store';
+import { setToken } from '../redux/store';
 
 function MyPage() {
   const [currentPage, setCurrentPage] = useState(3);
@@ -15,13 +15,11 @@ function MyPage() {
 
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
-
-  console.log(user.token);
   
   const handleProfileUpdate = () => {
     // setValue 액션을 디스패치하여 값을 변경합니다.
     // 10으로 변경하고 싶다면 다음과 같이 작성합니다
-    dispatch(setValue(10));
+    dispatch(setToken("hello word!"));
   };
 
 
@@ -101,7 +99,7 @@ function MyPage() {
                     placeholder="닉네임을 입력하세요" 
                   />
                   <div className="text-xs text-blue-300 mt-1 ml-4">
-                    *슬랙 이미지와 동일해 주세요.
+                    *슬랙 이미지와 동일해 주세요. {user.token}
                   </div>
                 </div>
               </div>

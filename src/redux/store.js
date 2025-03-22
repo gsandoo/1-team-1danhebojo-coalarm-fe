@@ -6,14 +6,14 @@ const userSlice = createSlice({
   name: "user",
   initialState: { token: "accessToken값을 여기다 넣어서 사용해주세요!" },
   reducers: {
-    setValue: (state, action) => {
-      state.value = action.payload;
+    setToken: (state, action) => {
+      state.token = action.payload;
     },
   },
 });
 
 // 액션 생성자 내보내기
-export const { setValue } = userSlice.actions;
+export const { setToken } = userSlice.actions;
 
 // 스토어 생성
 export const store = configureStore({
