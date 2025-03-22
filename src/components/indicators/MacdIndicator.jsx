@@ -1,7 +1,11 @@
 // src/components/indicators/MacdIndicator.jsx
 import React from 'react';
 
-function MacdIndicator({ macd, signal, histogram }) {
+function MacdIndicator({ macd, signal, histogram, trend }) {
+  const trendText = trend === 'RISE' ? '상승' : trend === 'FALL' ? '하락' : '중립';
+  
+  const trendColor = trend === 'RISE' ? 'text-green-500' : trend === 'FALL' ? 'text-red-500' : 'text-white';
+
   return (
     <div className="bg-blue-900 rounded-lg p-4 relative">
       <div className="flex justify-between items-center mb-3">
@@ -25,7 +29,9 @@ function MacdIndicator({ macd, signal, histogram }) {
         </div>
         <div className="flex justify-between mb-1">
           <span>추세:</span>
-          <span className="text-white">{Number(macd) > Number(signal) ? '상승' : '하락'}</span>
+          <span className={trendColor}>
+            {trend ? trendText : (Number(macd) > Number(signal) ? '상승' : '하락')}
+          </span>
         </div>
       </div>
     </div>

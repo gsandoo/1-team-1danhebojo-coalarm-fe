@@ -29,7 +29,7 @@ function LongShortGuide() {
             </div>
             
             <div className="bg-blue-950 p-4 rounded-lg border-l-4 border-red-500">
-              <h3 className="text-lg font-medium mb-2">숏 포지션 우세 (Short &gt 50%)</h3>
+              <h3 className="text-lg font-medium mb-2">숏 포지션 우세 (Short &gt; 50%)</h3>
               <p className="text-sm">
                 시장 참여자들이 가격 하락을 예상하고 있으며, 매도 포지션이 더 많습니다. 일반적으로 시장의 하락 추세를 시사합니다.
               </p>
@@ -43,7 +43,7 @@ function LongShortGuide() {
             </div>
             
             <div className="bg-blue-950 p-4 rounded-lg border-l-4 border-yellow-500">
-              <h3 className="text-lg font-medium mb-2">극단적인 숏 포지션 (Short &gt 70%)</h3>
+              <h3 className="text-lg font-medium mb-2">극단적인 숏 포지션 (Short &gt; 70%)</h3>
               <p className="text-sm">
                 매도 포지션이 매우 우세한 상태로, 과매도 상태일 수 있습니다. 이는 반등이 발생할 가능성을 시사할 수 있습니다.
               </p>
