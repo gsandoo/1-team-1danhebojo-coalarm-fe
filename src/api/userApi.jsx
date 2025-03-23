@@ -25,7 +25,7 @@ const userApi = {
     }
     
     if (userData.profileImage) {
-      formData.append('profile_image', userData.profileImage);
+      formData.append('profileImage', userData.profileImage);
     }
     
     return axiosInstance.patch('/users', formData, {
