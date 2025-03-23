@@ -141,12 +141,12 @@ function Dashboard() {
         </div>
         
         {/* 지표 카드 그리드 */}
-        <div className="grid grid-cols-5 gap-4 mb-5">
+        <div className="grid grid-cols-4 gap-4 mb-5">
           {/* 공포 & 탐욕 지수 (Bull) */}
-          <FearGreedIndex label="공격" value={fearGreedIndex.bull} />
+          <FearGreedIndex label="공포" value={fearGreedIndex.bull} />
           
           {/* 공포 & 탐욕 지수 (Bear) */}
-          <FearGreedIndex label="방어" value={fearGreedIndex.bear} />
+          {/* <FearGreedIndex label="방어" value={fearGreedIndex.bear} /> */}
           
           {/* MACD */}
           <MacdIndicator 
