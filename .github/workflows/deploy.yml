@@ -27,7 +27,8 @@ jobs:
         run: npm ci
         
       - name: Build App
-        run: npm run build
+        run: vite build --mode development #개발환경
+        VITE_SERVER_HTTPS: false
         
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
