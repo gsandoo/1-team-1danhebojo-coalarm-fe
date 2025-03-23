@@ -4,7 +4,10 @@ import { configureStore, createSlice } from "@reduxjs/toolkit";
 // 카운터 슬라이스 생성 (값 하나만 관리)
 const userSlice = createSlice({
   name: "user",
-  initialState: { token: "accessToken값을 여기다 넣어서 사용해주세요!" },
+  initialState: {
+    token:
+      "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzOTY3ODg3MzcyIiwiaWF0IjoxNzQyNjk1NjkwLCJleHAiOjE3NDI3ODIwOTB9.2cD5rdZMpxKEW-VIWpJRJTObaK9kM4Whc1_qOmqbBVc",
+  },
   reducers: {
     setToken: (state, action) => {
       state.token = action.payload;

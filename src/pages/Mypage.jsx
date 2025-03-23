@@ -1,34 +1,90 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import Sidebar from '../components/Sidebar';
-import ProfileAvatar from '../components/mypage/ProfileAvatar';
+import ProfileSection from '../components/mypage/ProfileSection';
 import NotificationSection from '../components/mypage/NotificationSection';
 import DiscordIntegrationSection from '../components/mypage/DiscordIntegrationSection';
 import WithdrawalConfirmationModal from '../components/mypage/WithdrawalConfirmationModal';
-
-import { useSelector,useDispatch } from 'react-redux';
-import { setToken } from '../redux/store';
+import userService from '../components/mypage/userService';
 
 function MyPage() {
   const [currentPage, setCurrentPage] = useState(3);
-  const [profileImage, setProfileImage] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const user = useSelector((state) => state.user);
-  const dispatch = useDispatch();
-  
-  const handleProfileUpdate = () => {
-    // setValue 액션을 디스패치하여 값을 변경합니다.
-    // 10으로 변경하고 싶다면 다음과 같이 작성합니다
-    dispatch(setToken("hello word!"));
+
+  // 사용자 정보 조회
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        setLoading(true);
+        const response = await userService.getUserInfo();
+        
+        if (response.status === 'success') {
+          setUserInfo(response.data);
+        } else {
+          setError('사용자 정보를 불러오는데 실패했습니다.');
+        }
+      } catch (error) {
+        let errorMessage = '사용자 정보를 불러오는데 실패했습니다.';
+        
+        if (error.response) {
+          const status = error.response.status;
+          if (status === 401) {
+            errorMessage = '로그인이 필요합니다.';
+            // 로그인 페이지로 리다이렉트 로직 추가 가능
+          } else if (status === 404) {
+            errorMessage = '존재하지 않는 회원입니다.';
+          } else if (error.response.data?.error?.message) {
+            errorMessage = error.response.data.error.message;
+          }
+        }
+        
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
+  // 프로필 업데이트 핸들러
+  const handleProfileUpdate = async (updatedUserInfo) => {
+    setUserInfo(updatedUserInfo);
+    
+    // 프로필 업데이트 후 최신 사용자 정보를 다시 가져옴
+    try {
+      const response = await userService.getUserInfo();
+      if (response.status === 'success') {
+        setUserInfo(response.data);
+        console.log('사용자 정보 갱신 완료');
+      }
+    } catch (error) {
+      console.error('사용자 정보 갱신 실패:', error);
+    }
   };
 
-
-  // 목업 데이터
-  const userInfo = {
-    nickname: "김코알람",
-    email: "example@naver.com"
+  // 회원 탈퇴 모달
+  const handleWithdrawalClick = () => {
+    setShowWithdrawalModal(true);
   };
 
+  const handleCloseWithdrawalModal = () => {
+    setShowWithdrawalModal(false);
+  };
+
+  const handleConfirmWithdrawal = () => {
+    // 회원 탈퇴 로직 구현
+    console.log("회원 탈퇴 처리");
+    setShowWithdrawalModal(false);
+    // 회원 탈퇴 후 로그인 페이지로 리다이렉트 등의 로직 추가
+  };
+
+  // 공지사항 데이터 (API 연동 가능)
   const notifications = [
     {
       id: 3,
@@ -47,106 +103,57 @@ function MyPage() {
     }
   ];
 
-  const handleProfileImageChange = (newImage) => {
-    setProfileImage(newImage);
-  };
-
-  const handleWithdrawalClick = () => {
-    setShowWithdrawalModal(true);
-  };
-
-  const handleCloseWithdrawalModal = () => {
-    setShowWithdrawalModal(false);
-  };
-
-  const handleConfirmWithdrawal = () => {
-    // 회원 탈퇴 로직 구현
-    console.log("회원 탈퇴 처리");
-    setShowWithdrawalModal(false);
-    // 여기에 회원 탈퇴 후 로그인 페이지로 리다이렉트 등의 로직 추가
-  };
-
   return (
     <div className="flex h-screen w-full text-white">
       {/* 사이드바 - 고정 너비 */}
       <div className="w-[228px] flex-shrink-0">
-        <Sidebar/>
+        <Sidebar />
       </div>
 
       {/* 메인 컨텐츠 */}
       <div className="flex-grow p-6 flex flex-col items-center">
-        <div className="max-w-2xl w-full flex flex-col items-center">
-          {/* 프로필 섹션 */}
-          <div className="flex flex-col items-center mb-8 p-6 rounded-xl w-full max-w-md">
-            {/* 프로필 아바타 */}
-            <div className="mb-6">
-              <ProfileAvatar 
-                initialImage={profileImage} 
-                onImageChange={handleProfileImageChange} 
+        {loading ? (
+          null
+        ) : error ? (
+          <div className="text-red-500 mt-8">{error}</div>
+        ) : (
+          <div className="max-w-2xl w-full flex flex-col items-center">
+            {/* 프로필 섹션 */}
+            {userInfo && (
+              <ProfileSection 
+                userInfo={userInfo} 
+                onProfileUpdate={handleProfileUpdate} 
               />
+            )}
+
+            {/* 공지사항 섹션 */}
+            <NotificationSection
+              notifications={notifications}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+            />
+
+            {/* 디스코드 연동 섹션 */}
+            <DiscordIntegrationSection 
+              discordWebhook={userInfo?.discordWebhook} 
+            />
+
+            {/* 회원 탈퇴 링크 */}
+            <div className="mt-[40px] text-center">
+              <span
+                className="text-xs text-blue-300 hover:underline cursor-pointer"
+                onClick={handleWithdrawalClick}
+              >
+                회원 탈퇴하기
+              </span>
             </div>
-            
-            {/* 닉네임 및 이메일 필드 - 이미지에 맞게 정렬 */}
-            <div className="w-full space-y-4">
-              {/* 닉네임 필드 */}
-              <div className="flex">
-                <div className="text-sm font-medium w-[60px] pt-2">닉네임</div>
-                <div className="flex-1">
-                  <input 
-                    type="text" 
-                    className="w-[284px] h-[43px] bg-[#07093d]/60 rounded-full px-4 py-2 text-sm border border-[#4A4FBA]/40" 
-                    defaultValue={userInfo.nickname}
-                    placeholder="닉네임을 입력하세요" 
-                  />
-                  <div className="text-xs text-blue-300 mt-1 ml-4">
-                    *슬랙 이미지와 동일해 주세요. {user.token}
-                  </div>
-                </div>
-              </div>
-              
-              {/* 이메일 필드 */}
-              <div className="flex">
-                <div className="text-sm font-medium w-[60px] pt-2">이메일</div>
-                <div className="flex-1">
-                  <div className="w-[284px] h-[43px] bg-[#07093d]/60 rounded-full px-4 flex items-center text-sm border border-[#4A4FBA]/40 text-gray-400">
-                    {userInfo.email}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* 프로필 수정 버튼 */}
-            <button className="bg-[#1631FE] hover:bg-blue-700 text-white rounded-full py-2 px-8 text-sm mt-8" 
-            onClick={handleProfileUpdate}>
-              프로필 수정하기
-            </button>
           </div>
-
-          {/* 공지사항 섹션 */}
-          <NotificationSection 
-            notifications={notifications} 
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-          />
-
-          {/* 디스코드 연동 섹션 */}
-          <DiscordIntegrationSection />
-
-          {/* 회원 탈퇴 링크 */}
-          <div className="mt-[40px] text-center">
-            <span 
-              className="text-xs text-blue-300 hover:underline cursor-pointer"
-              onClick={handleWithdrawalClick}
-            >
-              회원 탈퇴하기
-            </span>
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* 회원 탈퇴 확인 모달 - 사이드바를 고려한 위치 */}
+      {/* 회원 탈퇴 확인 모달 */}
       {showWithdrawalModal && (
-        <WithdrawalConfirmationModal 
+        <WithdrawalConfirmationModal
           onClose={handleCloseWithdrawalModal}
           onConfirm={handleConfirmWithdrawal}
         />
