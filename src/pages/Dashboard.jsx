@@ -78,15 +78,16 @@ function Dashboard() {
         
         // 김치 프리미엄 데이터 가져오기
         const kimchiPremiumResponse = await dashboardApi.getKimchiPremium(0, 5);
-        setKimchiPremiumData(kimchiPremiumResponse.data.markets || mockKimchiPremiumData);
+        console.log('김치 프리미엄:', kimchiPremiumResponse);
+        setKimchiPremiumData(kimchiPremiumResponse.contents || mockKimchiPremiumData);
         
         // 최근 거래 내역 가져오기
-        const transactionsResponse = await dashboardApi.getRecentTransactions(coinId, 5);
-        setRecentTransactions(transactionsResponse.data.transactions || mockTransactions);
+        //const transactionsResponse = await dashboardApi.getRecentTransactions(coinId, 5);
+        //setRecentTransactions(transactionsResponse.data.transactions || mockTransactions);
         
         // 고래 거래 내역 가져오기
-        const whaleResponse = await dashboardApi.getWhaleTransactions(coinId, 5);
-        setWhaleTransactions(whaleResponse.data.transactions || mockWhaleTransactions);
+        //const whaleResponse = await dashboardApi.getWhaleTransactions(coinId, 5);
+        //setWhaleTransactions(whaleResponse.data.transactions || mockWhaleTransactions);
         
         // 공포&탐욕 지수 가져오기 (API가 있는 경우)
         try {
@@ -194,12 +195,12 @@ function Dashboard() {
         ) : (
           <>
             {/* 지표 카드 그리드 */}
-            <div className="grid grid-cols-5 gap-4 mb-5">
+            <div className="grid grid-cols-4 gap-4 mb-5">
               {/* 공포 & 탐욕 지수 (Bull) */}
               <FearGreedIndex label="공격" value={fearGreedIndex.bull} />
               
               {/* 공포 & 탐욕 지수 (Bear) */}
-              <FearGreedIndex label="방어" value={fearGreedIndex.bear} />
+              {/* <FearGreedIndex label="방어" value={fearGreedIndex.bear} /> */}
               
               {/* MACD */}
               <MacdIndicator 

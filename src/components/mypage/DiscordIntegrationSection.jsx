@@ -1,10 +1,9 @@
 // src/components/mypage/DiscordIntegrationSection.jsx
 import React, { useState } from 'react';
-import axios from 'axios';
 import { IconSettings } from '../../assets/images/mypage/Icons';
 import DiscordWebhookModal from '../modals/DiscordWebhookModal';
 import Toast from '../common/Toast';
-import { API_URL, TOKEN } from '../../config/environment';
+import userApi from '../../api/userApi';
 
 function DiscordIntegrationSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,19 +46,9 @@ function DiscordIntegrationSection() {
     try {
       console.log('디스코드 웹훅 연동 시도:', webhookUrl);
       
-      const response = await axios({
-        method: 'PATCH',
-        url: `${API_URL}/user/discord`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${TOKEN}`
-        },
-        data: {
-          web_hook_url: webhookUrl
-        }
-      });
-
-      console.log('디스코드 웹훅 연동 성공:', response.data);
+      await userApi.connectDiscord(webhookUrl);
+      
+      console.log('디스코드 웹훅 연동 성공');
       
       // 성공적으로 연동된 경우
       setIsModalOpen(false);

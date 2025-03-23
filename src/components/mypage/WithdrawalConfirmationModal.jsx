@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import userService from './userService';
+import userApi from '../../api/userApi';
 
 function WithdrawalConfirmationModal({ onClose, onConfirm }) {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -11,20 +11,13 @@ function WithdrawalConfirmationModal({ onClose, onConfirm }) {
       setError(null);
       
       // API 호출
-      const response = await userService.withdrawUser();
+      await userApi.deleteAccount();
       
-      if (response.status === 'success') {
-        // 상위 컴포넌트에 성공 알림
-        onConfirm();
-        
-        // 로그아웃 처리 (Redux에서 토큰 제거 등)
-        // 이 부분은 사용하는 상태 관리 방식에 따라 구현
-        
-        // 로그인 페이지로 리다이렉트
-        window.location.href = '/login'; // 또는 React Router를 사용
-      } else {
-        setError('회원 탈퇴 처리 중 오류가 발생했습니다.');
-      }
+      // 상위 컴포넌트에 성공 알림
+      onConfirm();
+      
+      // 로그인 페이지로 리다이렉트
+      window.location.href = '/login'; // 또는 React Router를 사용
     } catch (error) {
       let errorMessage = '회원 탈퇴 처리 중 오류가 발생했습니다.';
       

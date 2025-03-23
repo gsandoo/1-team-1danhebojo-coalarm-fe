@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // React Router 사용 가정
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import ProfileSection from '../components/mypage/ProfileSection';
 import NotificationSection from '../components/mypage/NotificationSection';
 import DiscordIntegrationSection from '../components/mypage/DiscordIntegrationSection';
 import WithdrawalConfirmationModal from '../components/mypage/WithdrawalConfirmationModal';
-import userService from '../components/mypage/userService';
+import userApi from '../api/userApi';
 
 function MyPage() {
   const [currentPage, setCurrentPage] = useState(3);
@@ -22,13 +22,8 @@ function MyPage() {
     const fetchUserInfo = async () => {
       try {
         setLoading(true);
-        const response = await userService.getUserInfo();
-        
-        if (response.status === 'success') {
-          setUserInfo(response.data);
-        } else {
-          setError('사용자 정보를 불러오는데 실패했습니다.');
-        }
+        const userData = await userApi.getUserInfo();
+        setUserInfo(userData);
       } catch (error) {
         let errorMessage = '사용자 정보를 불러오는데 실패했습니다.';
         
@@ -60,11 +55,9 @@ function MyPage() {
     
     // 프로필 업데이트 후 최신 사용자 정보를 다시 가져옴
     try {
-      const response = await userService.getUserInfo();
-      if (response.status === 'success') {
-        setUserInfo(response.data);
-        console.log('사용자 정보 갱신 완료');
-      }
+      const userData = await userApi.getUserInfo();
+      setUserInfo(userData);
+      console.log('사용자 정보 갱신 완료');
     } catch (error) {
       console.error('사용자 정보 갱신 실패:', error);
     }
@@ -86,9 +79,6 @@ function MyPage() {
     
     // 성공 메시지 설정
     setSuccessMessage('회원 탈퇴가 완료되었습니다.');
-    
-    // Redux에서 사용자 정보 및 토큰 제거
-    // dispatch(logout());
     
     // 3초 후 로그인 페이지로 리다이렉트
     setTimeout(() => {
@@ -128,7 +118,7 @@ function MyPage() {
 
             {/* 알람 섹션 */}
             <NotificationSection
-              notifications={notifications}
+              notifications={userInfo?.notifications || []}
               currentPage={currentPage}
               setCurrentPage={setCurrentPage}
             />
