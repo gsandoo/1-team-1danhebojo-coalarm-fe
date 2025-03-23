@@ -26,9 +26,13 @@ jobs:
       - name: Install Dependencies
         run: npm ci
         
+      - name: Create env file
+        run: echo "${{ secrets.ENV_DEVELOPMENT }}" > .env.development
+    
       - name: Build App
-        run: vite build --mode development #개발환경
-        VITE_SERVER_HTTPS: false
+        run: npm run build -- --mode development
+        env:
+          VITE_DISABLE_HTTPS: "true"
         
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1

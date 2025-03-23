@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // axios 인스턴스 생성
 const axiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
+    baseURL: import.meta.env.VITE_BASE_URL,
     withCredentials: true,
     headers: {
       'Content-Type': 'application/json',
@@ -10,7 +10,7 @@ const axiosInstance = axios.create({
   });
 
 // 요청 인터셉터
-instance.interceptors.request.use(
+axiosInstance.interceptors.request.use(
   (config) => {
     // 요청 전에 수행할 작업
     // 예: 토큰을 헤더에 추가
@@ -26,7 +26,7 @@ instance.interceptors.request.use(
 );
 
 // 응답 인터셉터
-instance.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (response) => {
     // 응답 데이터를 가공
     return response.data;
@@ -55,4 +55,4 @@ instance.interceptors.response.use(
   }
 );
 
-export default instance;
+export default axiosInstance;
