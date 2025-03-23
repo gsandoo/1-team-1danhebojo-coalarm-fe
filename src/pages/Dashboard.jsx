@@ -11,10 +11,11 @@ import LongShortRatio from '../components/indicators/LongShortRatio';
 import KimchiPremium from '../components/indicators/KimchiPremium';
 import TransactionList from '../components/transactions/TransactionList';
 
-function Dashboard() {
-  const { coinId = 1 } = useParams(); // URL에서 coinId 파라미터 추출, 기본값 1
+import TradingViewChart from '../components/dashboard/TradingViewChart';
 
-  // API에서 받아올 데이터를 위한 상태 관리
+function Dashboard() {
+  const { coinId = 1 } = useParams();
+
   const [coinData, setCoinData] = useState({ symbol: 'BTC', name: '비트코인' });
   const [fearGreedIndex, setFearGreedIndex] = useState({ bull: 55.0, bear: 50.0 });
   const [macdData, setMacdData] = useState({ 
@@ -78,16 +79,18 @@ function Dashboard() {
         
         // 김치 프리미엄 데이터 가져오기
         const kimchiPremiumResponse = await dashboardApi.getKimchiPremium(0, 5);
-        console.log('김치 프리미엄:', kimchiPremiumResponse);
         setKimchiPremiumData(kimchiPremiumResponse.contents || mockKimchiPremiumData);
         
         // 최근 거래 내역 가져오기
         //const transactionsResponse = await dashboardApi.getRecentTransactions(coinId, 5);
         //setRecentTransactions(transactionsResponse.data.transactions || mockTransactions);
+        setRecentTransactions(mockTransactions);
         
         // 고래 거래 내역 가져오기
         //const whaleResponse = await dashboardApi.getWhaleTransactions(coinId, 5);
         //setWhaleTransactions(whaleResponse.data.transactions || mockWhaleTransactions);
+        setWhaleTransactions(mockWhaleTransactions);
+        
         
         // 공포&탐욕 지수 가져오기 (API가 있는 경우)
         try {
@@ -233,8 +236,14 @@ function Dashboard() {
                       <span className="text-gray-300 ml-2 text-sm">{coinData.symbol}/KRW</span>
                     </div>
                   </div>
-                  <div className="bg-blue-950 h-96 rounded-md flex items-center justify-center">
-                    <p className="text-white text-center">차트가 로드됩니다...</p>
+                  {/* TradingView 차트 컴포넌트 추가 */}
+                  <div className="bg-blue-950 h-96 rounded-md">
+                    <TradingViewChart 
+                      symbol={`${coinData.symbol}KRW`} 
+                      exchange="UPBIT" 
+                      theme="dark"
+                      interval="1" // 분봉
+                    />
                   </div>
                 </div>
               </div>
