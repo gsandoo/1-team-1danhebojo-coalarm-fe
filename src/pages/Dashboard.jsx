@@ -122,7 +122,7 @@ function Dashboard() {
     fetchData();
     
     // 5초마다 데이터 업데이트 (실제 운영 환경에서는 적절한 간격으로 조정)
-    const intervalId = setInterval(fetchData, 5000);
+    const intervalId = setInterval(fetchData, 15000);
     
     return () => clearInterval(intervalId);
   }, [coinId]); // coinId가 변경될 때마다 데이터 재요청

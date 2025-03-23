@@ -8,7 +8,7 @@ import WithdrawalConfirmationModal from '../components/mypage/WithdrawalConfirma
 import userApi from '../api/userApi';
 
 function MyPage() {
-  const [currentPage, setCurrentPage] = useState(3);
+  const [currentPage, setCurrentPage] = useState(1);
   const [userInfo, setUserInfo] = useState(null);
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -118,7 +118,6 @@ function MyPage() {
 
             {/* 알람 섹션 */}
             <NotificationSection
-              notifications={userInfo?.notifications || []}
               currentPage={currentPage}
               setCurrentPage={setCurrentPage}
             />
