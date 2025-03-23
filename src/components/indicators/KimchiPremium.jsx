@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 
 function KimchiPremium({ markets = [] }) {
   const [showTooltip, setShowTooltip] = useState(false);
+  const marketData = markets.contents || markets;
   
   return (
     <div className="bg-blue-900 rounded-lg p-4 relative">
@@ -40,21 +41,31 @@ function KimchiPremium({ markets = [] }) {
           </tr>
         </thead>
         <tbody>
-          {markets.map((market, index) => (
-            <tr key={index} className="border-b border-gray-700">
-              <td className="py-2 flex items-center">
-                <div className={`w-3 h-3 rounded-full mr-2 ${market.change >= 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                <span className="text-white">{market.coin}</span>
-              </td>
-              <td className={`py-2 text-right ${market.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {market.krwPrice.toLocaleString('ko-KR')}
-              </td>
-              <td className="py-2 text-right text-gray-400">{market.usdtPrice.toLocaleString('en-US')}</td>
-              <td className={`py-2 text-right font-medium ${market.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {market.change >= 0 ? '+' : ''}{market.change.toFixed(2)}%
+          {marketData && marketData.length > 0 ? (
+            marketData.map((market) => (
+              <tr key={market.premiumId} className="border-b border-gray-700">
+                <td className="py-2 flex items-center">
+                  <div className={`w-3 h-3 rounded-full mr-2 ${market.dailyChange >= 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  <span className="text-white">{market.coin?.symbol || '?'}</span>
+                </td>
+                <td className={`py-2 text-right ${market.dailyChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {market.domesticPrice.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
+                </td>
+                <td className="py-2 text-right text-gray-400">
+                  {market.globalPrice.toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                </td>
+                <td className={`py-2 text-right font-medium ${market.kimchiPremium >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {market.kimchiPremium >= 0 ? '+' : ''}{market.kimchiPremium.toFixed(2)}%
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="4" className="py-4 text-center text-gray-400">
+                데이터가 없습니다.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
     </div>
