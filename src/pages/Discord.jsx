@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 // 이미지 임포트
-import coalarmLogo from '../assets/images/discord/userIcon.png';
+import userIcon from '../assets/images/discord/userIcon.png';
 import discordLogo from '../assets/images/discord/discord.png';
 import dashboardImage from '../assets/images/discord/dashboard.png';
+import coalarmLogo from '../assets/images/header/logo.png';
 
 // 컴포넌트 임포트
 import DiscordWebhookModal from '../components/modals/DiscordWebhookModal';
@@ -108,19 +109,19 @@ function Discord() {
   };
 
   return (
-    <div className="w-screen h-screen bg-[#0E106C] flex flex-col items-center justify-center p-6 relative">
+    <div className="w-screen h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-blue-800 flex flex-col items-center justify-center p-6 relative">
       {/* 로고 */}
-      <div className="absolute top-6 left-10 text-white text-2xl font-medium">
+      <div className="absolute top-6 left-10 text-white text-2xl font-medium italic">
         coalarm
       </div>
       
       {/* 메인 텍스트 */}
       <div className="text-center mb-16">
         <h2 className="text-white text-3xl font-medium">
-          코알람과 디스코드를 연동하여 코인별 <span className="text-blue-300">실시간 알림을</span> 받을 수 있어요!
+          코알람과 디스코드을 연동하여 코인 별 <span className="text-white font-bold">실시간 알람을</span> 받을 수 있어요!
         </h2>
         <p className="text-white text-lg mt-3 opacity-80">
-          설정한 알림과 지원내용을 확인해 보세요
+          맞춤형 알람과 커뮤니티를 경험해 보세요
         </p>
       </div>
       
@@ -131,20 +132,20 @@ function Discord() {
           <div className="text-white text-base font-medium mb-5 bg-blue-800 px-4 py-1.5 rounded-full">
             STEP1
           </div>
-          <div className="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-            <img src={coalarmLogo} alt="Coalarm Logo" className="w-16 h-16" />
+          <div className="w-24 h-24 rounded-full flex items-center justify-center mb-4">
+            <img src={userIcon} alt="User Icon" className="w-20 h-20" />
           </div>
-          <div className="text-center text-white text-base mb-3">
-            coalarm
+          <div className="text-center mb-3">
+            <img src={coalarmLogo} alt="Coalarm Logo" className="h-4" />
           </div>
           <div className="border-t border-gray-700 w-full my-5"></div>
-          <h3 className="text-white text-xl font-medium mb-3 text-center">
+          <h3 className="text-white text-xl font-medium mb-3 text-left w-full">
             코알람 계정 생성
           </h3>
-          <p className="text-white text-base opacity-70 text-center">
-            카카오로 자동으로 회원가입.
+          <p className="text-white text-base opacity-70 text-left w-full">
+            닉네임은 자동으로 생성돼요.
             <br />
-            간편하게 아이디/비밀번호 등록할 수 있어요.
+            언제든지 마이페이지에서 수정할 수 있어요.
           </p>
         </div>
         
@@ -153,20 +154,20 @@ function Discord() {
           <div className="text-white text-base font-medium mb-5 bg-blue-800 px-4 py-1.5 rounded-full">
             STEP2
           </div>
-          <div className="w-24 h-24 flex items-center justify-center">
-            <img src={discordLogo} alt="Discord Logo" className="h-25" />
+          <div className="w-24 h-24 flex items-center justify-center mb-4">
+            <img src={discordLogo} alt="Discord Logo" className="w-32 h-24" />
           </div>
-          <div className="invisible text-center text-white text-base mb-3">
-            placeholder
+          <div className="invisible mb-3">
+            <span className="h-4 block">placeholder</span>
           </div>
           <div className="border-t border-gray-700 w-full my-5"></div>
-          <h3 className="text-white text-xl font-medium mb-3 text-center">
-            알림 범주 디스코드 계정 연동
+          <h3 className="text-white text-xl font-medium mb-3 text-left w-full">
+            알람 받을 디스코드 계정 연동
           </h3>
-          <p className="text-white text-base opacity-70 text-center">
-            디스코드는 구글 계정이 필요해요.
+          <p className="text-white text-base opacity-70 text-left w-full">
+            디스코드은 구글 계정이 필요해요.
             <br />
-            디스코드 연결이 완료되면 알림을 받을 수 있어요.
+            디스코드 앱에서 알람을 받을 수 있어요.
           </p>
         </div>
         
@@ -175,18 +176,18 @@ function Discord() {
           <div className="text-white text-base font-medium mb-5 bg-blue-800 px-4 py-1.5 rounded-full">
             STEP3
           </div>
-          <div className="w-24 h-24 flex items-center justify-center">
-            <img src={dashboardImage} alt="Dashboard" className="h-16" />
+          <div className="w-24 h-24 flex items-center justify-center mb-4">
+            <img src={dashboardImage} alt="Dashboard" className="w-32 h-24" />
           </div>
-          <div className="invisible text-center text-white text-base mb-3">
-            placeholder
+          <div className="invisible mb-3">
+            <span className="h-4 block">placeholder</span>
           </div>
           <div className="border-t border-gray-700 w-full my-5"></div>
-          <h3 className="text-white text-xl font-medium mb-3 text-center">
+          <h3 className="text-white text-xl font-medium mb-3 text-left w-full">
             코알람의 대시보드를 통해
           </h3>
-          <p className="text-white text-base opacity-70 text-center">
-            투자 전략을 세우세요
+          <p className="text-white text-base opacity-70 text-left w-full">
+            투자 전략을 세워보세요!
           </p>
         </div>
       </div>
@@ -194,13 +195,13 @@ function Discord() {
       {/* 버튼 영역 */}
       <div className="flex gap-6">
         <button 
-          className="bg-blue-900 text-white font-medium py-4 px-12 rounded-full hover:bg-blue-800 transition-colors text-lg"
+          className="bg-blue-950 text-white font-medium py-4 px-20 rounded-full hover:bg-blue-800 transition-colors text-lg shadow-lg backdrop-blur-sm"
           onClick={handleSkip}
         >
           건너뛰기
         </button>
         <button 
-          className="bg-blue-600 text-white font-medium py-4 px-12 rounded-full hover:bg-blue-500 transition-colors text-lg"
+          className="bg-blue-600 text-white font-medium py-4 px-20 rounded-full hover:bg-blue-500 transition-colors text-lg shadow-lg"
           onClick={handleOpenModal}
         >
           디스코드 연동하기
