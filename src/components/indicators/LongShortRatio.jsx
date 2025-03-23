@@ -45,7 +45,7 @@ function LongShortRatio({ longRatio, shortRatio }) {
           </div>
           <div className="text-center">
             <button className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded-md">
-              알림 설정
+             
             </button>
           </div>
           <div>

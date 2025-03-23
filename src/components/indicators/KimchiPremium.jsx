@@ -46,7 +46,7 @@ function KimchiPremium({ markets = [] }) {
               <tr key={market.premiumId} className="border-b border-gray-700">
                 <td className="py-2 flex items-center">
                   <div className={`w-3 h-3 rounded-full mr-2 ${market.dailyChange >= 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                  <span className="text-white">{market.coin?.symbol || '?'}</span>
+                  <span className="text-white">{market.coin || '?'}</span>
                 </td>
                 <td className={`py-2 text-right ${market.dailyChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                   {market.domesticPrice.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
