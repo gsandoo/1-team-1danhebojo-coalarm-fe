@@ -32,6 +32,13 @@ function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   
+  // 코인 검색 관련 상태
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResult, setSearchResult] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState(null);
+  const [recentSearches, setRecentSearches] = useState([]);
+  
   // API 데이터 가져오기
   useEffect(() => {
     const fetchData = async () => {
@@ -82,15 +89,15 @@ function Dashboard() {
         setKimchiPremiumData(kimchiPremiumResponse.contents || mockKimchiPremiumData);
         
         // 최근 거래 내역 가져오기
-        //const transactionsResponse = await dashboardApi.getRecentTransactions(coinId, 5);
-        //setRecentTransactions(transactionsResponse.data.transactions || mockTransactions);
-        setRecentTransactions(mockTransactions);
+        const transactionsResponse = await dashboardApi.getRecentTransactions(coinId, 5);
+        setRecentTransactions(transactionsResponse.data.transactions || mockTransactions);
+       
         
         // 고래 거래 내역 가져오기
-        //const whaleResponse = await dashboardApi.getWhaleTransactions(coinId, 5);
-        //setWhaleTransactions(whaleResponse.data.transactions || mockWhaleTransactions);
-        setWhaleTransactions(mockWhaleTransactions);
+        const whaleResponse = await dashboardApi.getWhaleTransactions(coinId, 5);
+        setWhaleTransactions(whaleResponse.data.transactions || mockWhaleTransactions);
         
+            
         
         // 공포&탐욕 지수 가져오기 (API가 있는 경우)
         try {
@@ -124,14 +131,24 @@ function Dashboard() {
     // 5초마다 데이터 업데이트 (실제 운영 환경에서는 적절한 간격으로 조정)
     const intervalId = setInterval(fetchData, 15000);
     
+    // 최근 검색 기록 불러오기
+    const savedSearches = localStorage.getItem('recentCoinSearches');
+    if (savedSearches) {
+      try {
+        setRecentSearches(JSON.parse(savedSearches));
+      } catch (e) {
+        console.error('Failed to parse recent searches:', e);
+      }
+    }
+    
     return () => clearInterval(intervalId);
   }, [coinId]); // coinId가 변경될 때마다 데이터 재요청
   
   // 김치 프리미엄 예시 데이터
   const mockKimchiPremiumData = [
-    { coin: 'BTC', krwPrice: 128448000, usdtPrice: 86086.82, change: 2.84 },
-    { coin: 'ALGO', krwPrice: 377.00, usdtPrice: 0.29, change: 3.12 },
-    { coin: 'STMX', krwPrice: 5.82, usdtPrice: 0.00, change: -11.27 }
+    { coin: 'BTC', domesticPrice: 128448000, globalPrice: 86086.82, kimchiPremium: 2.84 },
+    { coin: 'ALGO', domesticPrice: 377.00, globalPrice: 0.29, kimchiPremium: 3.12 },
+    { coin: 'STMX', domesticPrice: 5.82, globalPrice: 0.00, kimchiPremium: -11.27 }
   ];
   
   // 예시 데이터 (API 연결 전 테스트용)
@@ -151,16 +168,55 @@ function Dashboard() {
     { id: 5, coin: 'BTC', price: 76724000, amount: 14.91, type: 'buy', time: '09:43:45' }
   ];
 
+  // 통화 포맷 함수
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('ko-KR').format(value);
+  };
+
   // 코인 검색 핸들러
-  const handleCoinSearch = async (query) => {
-    if (query.trim().length === 0) return;
+  const handleCoinSearch = async (term) => {
+    if (!term.trim()) return;
+    
+    setIsSearching(true);
+    setSearchError(null);
     
     try {
-      const response = await dashboardApi.searchCoins(query);
-      // 검색 결과 처리 로직 추가
-      console.log('검색 결과:', response.data);
+      const response = await dashboardApi.searchCoins(term);
+      
+      if (response.data && response.data.status === "success") {
+        const foundCoin = response.data.data;
+        
+        // 검색 결과 설정
+        setSearchResult(foundCoin);
+        
+        // 최근 검색 기록에 추가 (중복 제거)
+        setRecentSearches(prev => {
+          // 이미 있는 항목 제거
+          const filtered = prev.filter(item => item.coinId !== foundCoin.coinId);
+          // 새 항목을 맨 앞에 추가
+          const updated = [foundCoin, ...filtered].slice(0, 5); // 최대 5개까지만 저장
+          
+          // localStorage에 저장
+          localStorage.setItem('recentCoinSearches', JSON.stringify(updated));
+          
+          return updated;
+        });
+        
+        // 자동으로 차트 업데이트
+        setCoinData({
+          coinId: foundCoin.coinId,
+          symbol: foundCoin.symbol,
+          name: foundCoin.name
+        });
+        
+      } else {
+        setSearchError("검색 결과가 없습니다.");
+      }
     } catch (error) {
       console.error('코인 검색 실패:', error);
+      setSearchError("코인 검색 중 오류가 발생했습니다.");
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -256,6 +312,8 @@ function Dashboard() {
                       type="text"
                       placeholder="코인명 또는 코드"
                       className="w-full py-2 px-4 pr-10 rounded-md bg-blue-950 text-white border border-blue-800 focus:outline-none focus:border-blue-700"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                       onKeyPress={(e) => {
                         if (e.key === 'Enter') {
                           handleCoinSearch(e.target.value);
@@ -267,10 +325,7 @@ function Dashboard() {
                       className="h-5 w-5 absolute right-3 top-2.5 text-white opacity-60 cursor-pointer"
                       viewBox="0 0 20 20"
                       fill="currentColor"
-                      onClick={() => {
-                        const input = document.querySelector('input[placeholder="코인명 또는 코드"]');
-                        if (input) handleCoinSearch(input.value);
-                      }}
+                      onClick={() => handleCoinSearch(searchTerm)}
                     >
                       <path
                         fillRule="evenodd"
@@ -280,22 +335,90 @@ function Dashboard() {
                     </svg>
                   </div>
                   
-                  <div className="mt-4">
-                    <h3 className="text-white text-sm font-medium mb-2">최근 검색 기록</h3>
-                    <div className="bg-blue-950 rounded-md p-3 flex items-center justify-between">
+                  {/* 검색 중 로딩 표시 */}
+                  {isSearching && (
+                    <div className="mt-4 bg-blue-950 rounded-md p-3 text-white text-center">
+                      <p>검색 중...</p>
+                    </div>
+                  )}
+                  
+                  {/* 검색 오류 표시 */}
+                  {searchError && (
+                    <div className="mt-4 bg-red-900 rounded-md p-3 text-white text-center">
+                      <p>{searchError}</p>
+                    </div>
+                  )}
+                  
+                  {/* 검색 결과 표시 */}
+                  {searchResult && !isSearching && !searchError && (
+                    <div 
+                      className="mt-4 bg-blue-950 rounded-md p-3 flex items-center justify-between cursor-pointer hover:bg-blue-800 transition"
+                      onClick={() => {
+                        // 코인 데이터 업데이트하여 차트 변경
+                        setCoinData({
+                          coinId: searchResult.coinId,
+                          symbol: searchResult.symbol,
+                          name: searchResult.name
+                        });
+                      }}
+                    >
                       <div className="flex items-center">
                         <div className="mr-2 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center">
-                          <span className="text-black font-bold text-xs">₿</span>
+                          <span className="text-black font-bold text-xs">{searchResult.symbol.charAt(0)}</span>
                         </div>
                         <div>
-                          <h4 className="text-white font-medium">비트코인</h4>
-                          <p className="text-gray-400 text-xs">BTC/KRW</p>
+                          <h4 className="text-white font-medium">{searchResult.name}</h4>
+                          <p className="text-gray-400 text-xs">{searchResult.symbol}/KRW</p>
                         </div>
                       </div>
                       <div className="text-white text-xl font-bold">
-                        145,286,000
+                        {/* 실제 API에서 가격 데이터를 받아와야 함 */}
+                        {formatCurrency(Math.floor(Math.random() * 150000000))}
                       </div>
                     </div>
+                  )}
+                  
+                  {/* 최근 검색 기록 표시 */}
+                  <div className="mt-4">
+                    <h3 className="text-white text-sm font-medium mb-2">최근 검색 기록</h3>
+                    {recentSearches.length > 0 ? (
+                      <div className="space-y-2">
+                        {recentSearches.map((coin) => (
+                          <div 
+                            key={coin.coinId} 
+                            className="bg-blue-950 rounded-md p-3 flex items-center justify-between cursor-pointer hover:bg-blue-800 transition"
+                            onClick={() => {
+                              setSearchTerm(coin.name);
+                              setSearchResult(coin);
+                              // 코인 데이터 업데이트하여 차트 변경
+                              setCoinData({
+                                coinId: coin.coinId,
+                                symbol: coin.symbol,
+                                name: coin.name
+                              });
+                            }}
+                          >
+                            <div className="flex items-center">
+                              <div className="mr-2 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center">
+                                <span className="text-black font-bold text-xs">{coin.symbol.charAt(0)}</span>
+                              </div>
+                              <div>
+                                <h4 className="text-white font-medium">{coin.name}</h4>
+                                <p className="text-gray-400 text-xs">{coin.symbol}/KRW</p>
+                              </div>
+                            </div>
+                            <div className="text-white text-lg font-bold">
+                              {/* 실제 API에서 가격 데이터를 받아와야 함 */}
+                              {formatCurrency(Math.floor(Math.random() * 150000000))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-blue-950 rounded-md p-3 text-gray-400 text-center">
+                        <p>검색 기록이 없습니다</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

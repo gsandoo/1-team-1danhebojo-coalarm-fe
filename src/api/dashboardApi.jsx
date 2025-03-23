@@ -65,9 +65,7 @@ const dashboardApi = {
    * @returns {Promise} API 응답
    */
   searchCoins: (query) => {
-    return axiosInstance.get(`/coins/search`, {
-      params: { query }
-    });
+    return axiosInstance.get(`/coins`);
   },
 
   /**
