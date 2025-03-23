@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ProfileAvatar from './ProfileAvatar';
-import userService from './userService';
+import userApi from '../../api/userApi';
 
 const ProfileSection = ({ userInfo, onProfileUpdate }) => {
   const [profileImage, setProfileImage] = useState(null);
@@ -63,31 +63,30 @@ const ProfileSection = ({ userInfo, onProfileUpdate }) => {
         updateData.profileImage ? '이미지 변경 있음' : '이미지 변경 없음'
       );
       
-      const result = await userService.updateProfile(updateData);
+      const response = await userApi.updateUserProfile(updateData);
+      console.log('프로필 업데이트 응답:', response);
 
-      if (result.status === 'success') {
-        setSuccessMessage('프로필이 성공적으로 수정되었습니다.');
+      setSuccessMessage('프로필이 성공적으로 수정되었습니다.');
+      
+      // 상위 컴포넌트에 업데이트 알림
+      if (onProfileUpdate) {
+        // 업데이트된 사용자 정보 생성
+        const updatedUserInfo = {
+          ...userInfo,
+          nickname: nickname
+          // 프로필 이미지는 서버에서 새로운 정보를 받아와야 하므로 여기서 업데이트하지 않음
+        };
         
-        // 상위 컴포넌트에 업데이트 알림
-        if (onProfileUpdate) {
-          // 업데이트된 사용자 정보 생성
-          const updatedUserInfo = {
-            ...userInfo,
-            nickname: nickname
-            // 프로필 이미지는 서버에서 새로운 정보를 받아와야 하므로 여기서 업데이트하지 않음
-          };
-          
-          onProfileUpdate(updatedUserInfo);
-        }
-        
-        // 파일 업로드 후 프로필 이미지 상태 초기화
-        setProfileImage(null);
-        
-        // 3초 후 성공 메시지 사라지게 설정
-        setTimeout(() => {
-          setSuccessMessage('');
-        }, 3000);
+        onProfileUpdate(updatedUserInfo);
       }
+      
+      // 파일 업로드 후 프로필 이미지 상태 초기화
+      setProfileImage(null);
+      
+      // 3초 후 성공 메시지 사라지게 설정
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
     } catch (error) {
       if (error.response) {
         // 서버에서 응답이 온 경우
@@ -136,7 +135,7 @@ const ProfileSection = ({ userInfo, onProfileUpdate }) => {
               placeholder="닉네임을 입력하세요"
             />
             <div className="text-xs text-blue-300 mt-1 ml-4">
-              *슬랙 이미지와 동일해 주세요.
+              *수정할 닉네임을 입력해주세요.
             </div>
           </div>
         </div>
@@ -145,7 +144,7 @@ const ProfileSection = ({ userInfo, onProfileUpdate }) => {
         <div className="flex">
           <div className="text-sm font-medium w-[60px] pt-2">이메일</div>
           <div className="flex-1">
-            <div className="w-[284px] h-[43px] bg-[#07093d]/60 rounded-full px-4 flex items-center text-sm border border-[#4A4FBA]/40 text-gray-400">
+            <div className="w-[284px] h-[43px] rounded-full px-4 flex items-center text-sm">
               {userInfo?.email || ''}
             </div>
           </div>

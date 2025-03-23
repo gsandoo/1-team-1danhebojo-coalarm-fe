@@ -1,6 +1,14 @@
 import axiosInstance from './axios';
 
 const userApi = {
+
+  // 회원 정보 조회
+  getUserInfo: async () => {
+    const response = await axiosInstance.get('/users');
+    return response.data;
+  },
+
+
   //디스코드 웹훅 URL 연동
   connectDiscord: (webHookUrl) => {
     return axiosInstance.patch('/users/discord', {
@@ -20,7 +28,7 @@ const userApi = {
       formData.append('profile_image', userData.profileImage);
     }
     
-    return axiosInstance.patch('/user', formData, {
+    return axiosInstance.patch('/users', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -29,13 +37,13 @@ const userApi = {
 
   //회원 탈퇴
   deleteAccount: () => {
-    return axiosInstance.delete('/user');
+    return axiosInstance.delete('/users');
   },
 
   //로그아웃
 
   logout: () => {
-    return axiosInstance.post('/user/logout');
+    return axiosInstance.post('/users/logout');
   },
 
 };
