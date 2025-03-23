@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
   const disableHttps = env.VITE_DISABLE_HTTPS === "true"
   
   const serverConfig = {
-    port: 3000
+    port: 5173
   }
   
   // HTTPS 비활성화되지 않았을 때만 인증서 설정 추가

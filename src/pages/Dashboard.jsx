@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useParams } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import { useParams } from 'react-router-dom'; // 필요시 라이브러리 설치 필요
+import dashboardApi from '../api/dashboardApi';
 
 // 지표 컴포넌트 import
 import FearGreedIndex from '../components/indicators/FearGreedIndex';
@@ -10,9 +10,6 @@ import RsiIndicator from '../components/indicators/RsiIndicator';
 import LongShortRatio from '../components/indicators/LongShortRatio';
 import KimchiPremium from '../components/indicators/KimchiPremium';
 import TransactionList from '../components/transactions/TransactionList';
-
-// 아이콘 import (필요에 따라 경로 수정)
-import bitcoinIcon from '../assets/images/dashboard/bitcoin.png';
 
 function Dashboard() {
   const { coinId = 1 } = useParams(); // URL에서 coinId 파라미터 추출, 기본값 1
@@ -40,7 +37,7 @@ function Dashboard() {
       setIsLoading(true);
       try {
         // 통합 대시보드 API 요청
-        const dashboardResponse = await axios.get(`https:///dashboard/${coinId}/index`);
+        const dashboardResponse = await dashboardApi.getDashboardIndex(coinId);
         
         // 요청 성공 및 데이터 확인
         if (dashboardResponse.data.status === "success" && dashboardResponse.data.data) {
@@ -80,20 +77,30 @@ function Dashboard() {
         }
         
         // 김치 프리미엄 데이터 가져오기
-        const kimchiPremiumResponse = await axios.get('https://localhost:8443/?offset=0&limit=5', {
-            headers: {
-                'Authorization': `Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzOTY2MzYzODM4IiwiaWF0IjoxNzQyNTQzOTY2LCJleHAiOjE3NDI2MzAzNjZ9.yMRdkmreY1eIRfigqGIX2u0uqmd0-4IjR_2nui-w-3g`
-            }
-        });
+        const kimchiPremiumResponse = await dashboardApi.getKimchiPremium(0, 5);
         setKimchiPremiumData(kimchiPremiumResponse.data.markets || mockKimchiPremiumData);
         
         // 최근 거래 내역 가져오기
-        // const transactionsResponse = await axios.get('https://api.example.com/btc/recent-transactions');
-        // setRecentTransactions(transactionsResponse.data.transactions || mockTransactions);
+        const transactionsResponse = await dashboardApi.getRecentTransactions(coinId, 5);
+        setRecentTransactions(transactionsResponse.data.transactions || mockTransactions);
         
-        // // 고래 거래 내역 가져오기
-        // const whaleResponse = await axios.get('https://api.example.com/btc/whale-transactions');
-        // setWhaleTransactions(whaleResponse.data.transactions || mockWhaleTransactions);
+        // 고래 거래 내역 가져오기
+        const whaleResponse = await dashboardApi.getWhaleTransactions(coinId, 5);
+        setWhaleTransactions(whaleResponse.data.transactions || mockWhaleTransactions);
+        
+        // 공포&탐욕 지수 가져오기 (API가 있는 경우)
+        try {
+          const fearGreedResponse = await dashboardApi.getFearGreedIndex();
+          if (fearGreedResponse.data && fearGreedResponse.data.data) {
+            setFearGreedIndex({
+              bull: fearGreedResponse.data.data.bull || 55.0,
+              bear: fearGreedResponse.data.data.bear || 50.0
+            });
+          }
+        } catch (fearGreedError) {
+          console.error("공포&탐욕 지수 불러오기 실패:", fearGreedError);
+          // 기본값 유지
+        }
         
       } catch (err) {
         console.error("데이터 불러오기 실패:", err);
@@ -140,6 +147,19 @@ function Dashboard() {
     { id: 5, coin: 'BTC', price: 76724000, amount: 14.91, type: 'buy', time: '09:43:45' }
   ];
 
+  // 코인 검색 핸들러
+  const handleCoinSearch = async (query) => {
+    if (query.trim().length === 0) return;
+    
+    try {
+      const response = await dashboardApi.searchCoins(query);
+      // 검색 결과 처리 로직 추가
+      console.log('검색 결과:', response.data);
+    } catch (error) {
+      console.error('코인 검색 실패:', error);
+    }
+  };
+
   return (
     <div className="flex bg-[#0E106C] min-h-screen max-w-screen overflow-hidden">
       {/* 사이드바 컴포넌트 */}
@@ -162,116 +182,138 @@ function Dashboard() {
           </button>
         </div>
         
-        {/* 지표 카드 그리드 */}
-        <div className="grid grid-cols-5 gap-4 mb-5">
-          {/* 공포 & 탐욕 지수 (Bull) - 아직 API에서 제공되지 않음 */}
-          <FearGreedIndex label="공격" value={fearGreedIndex.bull} />
-          
-          {/* 공포 & 탐욕 지수 (Bear) - 아직 API에서 제공되지 않음 */}
-          <FearGreedIndex label="방어" value={fearGreedIndex.bear} />
-          
-          {/* MACD */}
-          <MacdIndicator 
-            macd={macdData.macd}
-            signal={macdData.signal}
-            histogram={macdData.histogram}
-            trend={macdData.trend}
-          />
-          
-          {/* RSI */}
-          <RsiIndicator value={rsiData} />
-          
-          {/* 공매수/공매도 */}
-          <LongShortRatio 
-            longRatio={shortLongData.longRatio}
-            shortRatio={shortLongData.shortRatio}
-          />
-        </div>
-        
-        <div className="flex gap-4 mb-5">
-          {/* 비트코인 차트 영역 */}
-          <div className="flex-grow">
-            <div className="bg-blue-900 rounded-lg p-4">
-              <div className="flex items-center mb-4">
-                <div className="flex items-center">
-                  <div className="mr-2 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center">
-                    <span className="text-black font-bold text-xs">₿</span>
-                  </div>
-                  <h3 className="text-white font-medium">{coinData.name}</h3>
-                  <span className="text-gray-300 ml-2 text-sm">{coinData.symbol}/KRW</span>
-                </div>
-              </div>
-              <div className="bg-blue-950 h-96 rounded-md flex items-center justify-center">
-                <p className="text-white text-center">차트가 로드됩니다...</p>
-              </div>
-            </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            <span className="ml-2 text-white">데이터를 불러오는 중...</span>
           </div>
-          
-          {/* 오른쪽 검색 영역 */}
-          <div className="w-80">
-            <div className="bg-blue-900 rounded-lg p-4 mb-4">
-              <div className="relative mb-2">
-                <input
-                  type="text"
-                  placeholder="코인명 또는 코드"
-                  className="w-full py-2 px-4 pr-10 rounded-md bg-blue-950 text-white border border-blue-800 focus:outline-none focus:border-blue-700"
-                />
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 absolute right-3 top-2.5 text-white opacity-60"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+        ) : error ? (
+          <div className="bg-red-500/20 text-red-400 p-4 rounded-lg">
+            {error}
+          </div>
+        ) : (
+          <>
+            {/* 지표 카드 그리드 */}
+            <div className="grid grid-cols-5 gap-4 mb-5">
+              {/* 공포 & 탐욕 지수 (Bull) */}
+              <FearGreedIndex label="공격" value={fearGreedIndex.bull} />
+              
+              {/* 공포 & 탐욕 지수 (Bear) */}
+              <FearGreedIndex label="방어" value={fearGreedIndex.bear} />
+              
+              {/* MACD */}
+              <MacdIndicator 
+                macd={macdData.macd}
+                signal={macdData.signal}
+                histogram={macdData.histogram}
+                trend={macdData.trend}
+              />
+              
+              {/* RSI */}
+              <RsiIndicator value={rsiData} />
+              
+              {/* 공매수/공매도 */}
+              <LongShortRatio 
+                longRatio={shortLongData.longRatio}
+                shortRatio={shortLongData.shortRatio}
+              />
+            </div>
+            
+            <div className="flex gap-4 mb-5">
+              {/* 비트코인 차트 영역 */}
+              <div className="flex-grow">
+                <div className="bg-blue-900 rounded-lg p-4">
+                  <div className="flex items-center mb-4">
+                    <div className="flex items-center">
+                      <div className="mr-2 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center">
+                        <span className="text-black font-bold text-xs">₿</span>
+                      </div>
+                      <h3 className="text-white font-medium">{coinData.name}</h3>
+                      <span className="text-gray-300 ml-2 text-sm">{coinData.symbol}/KRW</span>
+                    </div>
+                  </div>
+                  <div className="bg-blue-950 h-96 rounded-md flex items-center justify-center">
+                    <p className="text-white text-center">차트가 로드됩니다...</p>
+                  </div>
+                </div>
               </div>
               
-              <div className="mt-4">
-                <h3 className="text-white text-sm font-medium mb-2">최근 검색 기록</h3>
-                <div className="bg-blue-950 rounded-md p-3 flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className="mr-2 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center">
-                      <span className="text-black font-bold text-xs">₿</span>
-                    </div>
-                    <div>
-                      <h4 className="text-white font-medium">비트코인</h4>
-                      <p className="text-gray-400 text-xs">BTC/KRW</p>
-                    </div>
+              {/* 오른쪽 검색 영역 */}
+              <div className="w-80">
+                <div className="bg-blue-900 rounded-lg p-4 mb-4">
+                  <div className="relative mb-2">
+                    <input
+                      type="text"
+                      placeholder="코인명 또는 코드"
+                      className="w-full py-2 px-4 pr-10 rounded-md bg-blue-950 text-white border border-blue-800 focus:outline-none focus:border-blue-700"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleCoinSearch(e.target.value);
+                        }
+                      }}
+                    />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 absolute right-3 top-2.5 text-white opacity-60 cursor-pointer"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      onClick={() => {
+                        const input = document.querySelector('input[placeholder="코인명 또는 코드"]');
+                        if (input) handleCoinSearch(input.value);
+                      }}
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                   </div>
-                  <div className="text-white text-xl font-bold">
-                    145,286,000
+                  
+                  <div className="mt-4">
+                    <h3 className="text-white text-sm font-medium mb-2">최근 검색 기록</h3>
+                    <div className="bg-blue-950 rounded-md p-3 flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="mr-2 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center">
+                          <span className="text-black font-bold text-xs">₿</span>
+                        </div>
+                        <div>
+                          <h4 className="text-white font-medium">비트코인</h4>
+                          <p className="text-gray-400 text-xs">BTC/KRW</p>
+                        </div>
+                      </div>
+                      <div className="text-white text-xl font-bold">
+                        145,286,000
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-        
-        <div className="flex gap-4 mb-5">
-          {/* 김치 프리미엄 */}
-          <div className="w-80">
-            <KimchiPremium markets={kimchiPremiumData} />
-          </div>
-          
-          {/* 실시간 거래 내역 */}
-          <div className="flex-grow grid grid-cols-2 gap-4">
-            {/* 실시간 체결 내역 */}
-            <TransactionList 
-              title="실시간 체결 내역" 
-              transactions={recentTransactions} 
-            />
             
-            {/* 실시간 고래 체결 내역 */}
-            <TransactionList 
-              title="실시간 고래 체결 내역" 
-              transactions={whaleTransactions} 
-            />
-          </div>
-        </div>
+            <div className="flex gap-4 mb-5">
+              {/* 김치 프리미엄 */}
+              <div className="w-80">
+                <KimchiPremium markets={kimchiPremiumData} />
+              </div>
+              
+              {/* 실시간 거래 내역 */}
+              <div className="flex-grow grid grid-cols-2 gap-4">
+                {/* 실시간 체결 내역 */}
+                <TransactionList 
+                  title="실시간 체결 내역" 
+                  transactions={recentTransactions} 
+                />
+                
+                {/* 실시간 고래 체결 내역 */}
+                <TransactionList 
+                  title="실시간 고래 체결 내역" 
+                  transactions={whaleTransactions} 
+                />
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
