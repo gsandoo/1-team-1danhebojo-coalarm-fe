@@ -1,7 +1,7 @@
 // src/pages/Discord.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import userApi from '../api/userApi';
 
 // 이미지 임포트
 import userIcon from '../assets/images/discord/userIcon.png';
@@ -12,9 +12,6 @@ import coalarmLogo from '../assets/images/header/logo.png';
 // 컴포넌트 임포트
 import DiscordWebhookModal from '../components/modals/DiscordWebhookModal';
 import Toast from '../components/common/Toast';
-
-// 환경 변수 임포트
-import { API_URL, TOKEN } from '../config/environment';
 
 function Discord() {
   const navigate = useNavigate();
@@ -66,19 +63,7 @@ function Discord() {
     try {
       console.log('디스코드 웹훅 연동 시도:', webhookUrl);
       
-      const response = await axios({
-        method: 'PATCH',
-        url: `${API_URL}/user/discord`,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${TOKEN}`
-        },
-        data: {
-          web_hook_url: webhookUrl
-        }
-      });
-
-      console.log('디스코드 웹훅 연동 성공:', response.data);
+      const response = await userApi.connectDiscord(webhookUrl);
       
       // 성공적으로 연동된 경우
       setIsModalOpen(false);
