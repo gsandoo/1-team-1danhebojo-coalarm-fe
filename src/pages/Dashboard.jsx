@@ -89,25 +89,19 @@ function Dashboard() {
         setKimchiPremiumData(kimchiPremiumResponse.contents || mockKimchiPremiumData);
         
         // 최근 거래 내역 가져오기
-        const transactionsResponse = await dashboardApi.getRecentTransactions(coinId, 5);
-        setRecentTransactions(transactionsResponse.data.transactions || mockTransactions);
+        setRecentTransactions( mockTransactions);
        
         
         // 고래 거래 내역 가져오기
-        const whaleResponse = await dashboardApi.getWhaleTransactions(coinId, 5);
-        setWhaleTransactions(whaleResponse.data.transactions || mockWhaleTransactions);
+        setWhaleTransactions(mockWhaleTransactions);
         
             
-        
         // 공포&탐욕 지수 가져오기 (API가 있는 경우)
         try {
-          const fearGreedResponse = await dashboardApi.getFearGreedIndex();
-          if (fearGreedResponse.data && fearGreedResponse.data.data) {
             setFearGreedIndex({
-              bull: fearGreedResponse.data.data.bull || 55.0,
-              bear: fearGreedResponse.data.data.bear || 50.0
+              bull:  55.0,
+              bear:  50.0
             });
-          }
         } catch (fearGreedError) {
           console.error("공포&탐욕 지수 불러오기 실패:", fearGreedError);
           // 기본값 유지
@@ -173,42 +167,59 @@ function Dashboard() {
     return new Intl.NumberFormat('ko-KR').format(value);
   };
 
-  // 코인 검색 핸들러
-  const handleCoinSearch = async (term) => {
-    if (!term.trim()) return;
-    
-    setIsSearching(true);
-    setSearchError(null);
-    
-    try {
+// 코인 검색 핸들러
+const handleCoinSearch = async (term) => {
+  if (!term.trim()) return;
+  
+  setIsSearching(true);
+  setSearchError(null);
+  
+  try {
       const response = await dashboardApi.searchCoins(term);
+      console.log(response);
       
-      if (response.data && response.data.status === "success") {
-        const foundCoin = response.data.data;
+      if (response.data && response.status === "success") {
+        const foundCoin = response.data;
+
+        console.log(foundCoin)
         
-        // 검색 결과 설정
-        setSearchResult(foundCoin);
-        
-        // 최근 검색 기록에 추가 (중복 제거)
-        setRecentSearches(prev => {
-          // 이미 있는 항목 제거
-          const filtered = prev.filter(item => item.coinId !== foundCoin.coinId);
-          // 새 항목을 맨 앞에 추가
-          const updated = [foundCoin, ...filtered].slice(0, 5); // 최대 5개까지만 저장
+        // 검색 결과가 올바른 형식인지 확인
+        if (foundCoin && typeof foundCoin === 'object' && 'coinId' in foundCoin && 'name' in foundCoin && 'symbol' in foundCoin) {
+          // 검색 결과 설정 - 필요한 속성만 추출하여 저장
+          setSearchResult({
+            coinId: foundCoin.coinId,
+            name: foundCoin.name,
+            symbol: foundCoin.symbol
+          });
           
-          // localStorage에 저장
-          localStorage.setItem('recentCoinSearches', JSON.stringify(updated));
+          // 최근 검색 기록에 추가 (중복 제거)
+          setRecentSearches(prev => {
+            // 이미 있는 항목 제거
+            const filtered = prev.filter(item => item.coinId !== foundCoin.coinId);
+            // 새 항목을 맨 앞에 추가 - 필요한 속성만 추출
+            const newItem = {
+              coinId: foundCoin.coinId,
+              name: foundCoin.name,
+              symbol: foundCoin.symbol
+            };
+            const updated = [newItem, ...filtered].slice(0, 5); // 최대 5개까지만 저장
+            
+            // localStorage에 저장
+            localStorage.setItem('recentCoinSearches', JSON.stringify(updated));
+            
+            return updated;
+          });
           
-          return updated;
-        });
-        
-        // 자동으로 차트 업데이트
-        setCoinData({
-          coinId: foundCoin.coinId,
-          symbol: foundCoin.symbol,
-          name: foundCoin.name
-        });
-        
+          // 자동으로 차트 업데이트
+          setCoinData({
+            coinId: foundCoin.coinId,
+            symbol: foundCoin.symbol,
+            name: foundCoin.name
+          });
+        } else {
+          console.error('잘못된 응답 형식:', foundCoin);
+          setSearchError("응답 데이터 형식이 올바르지 않습니다.");
+        }
       } else {
         setSearchError("검색 결과가 없습니다.");
       }
@@ -383,7 +394,7 @@ function Dashboard() {
                     <h3 className="text-white text-sm font-medium mb-2">최근 검색 기록</h3>
                     {recentSearches.length > 0 ? (
                       <div className="space-y-2">
-                        {recentSearches.map((coin) => (
+                        {recentSearches.slice(0, 3).map((coin) => (
                           <div 
                             key={coin.coinId} 
                             className="bg-blue-950 rounded-md p-3 flex items-center justify-between cursor-pointer hover:bg-blue-800 transition"

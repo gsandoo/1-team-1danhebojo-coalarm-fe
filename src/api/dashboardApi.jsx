@@ -64,8 +64,8 @@ const dashboardApi = {
    * @param {string} query - 검색어
    * @returns {Promise} API 응답
    */
-  searchCoins: (query) => {
-    return axiosInstance.get(`/coins`);
+   searchCoins: (query) => {
+    return axiosInstance.get(`/coins/search?term=${encodeURIComponent(query)}`);
   },
 
   /**
