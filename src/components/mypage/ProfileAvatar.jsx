@@ -7,10 +7,27 @@ function ProfileAvatar({ initialImage = null, onImageChange = () => {} }) {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // 이미지 파일 유효성 검사
+      if (!file.type.startsWith('image/')) {
+        alert('이미지 파일만 업로드 가능합니다.');
+        return;
+      }
+      
+      // 파일 크기 제한 (5MB)
+      const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+      if (file.size > MAX_FILE_SIZE) {
+        alert('이미지 크기는 5MB 이하만 가능합니다.');
+        return;
+      }
+      
+      // 이미지 미리보기 생성 및 파일 객체 전달
       const reader = new FileReader();
       reader.onloadend = () => {
         setImage(reader.result);
-        onImageChange(reader.result);
+        // File 객체 자체를 상위 컴포넌트로 전달 (중요 부분)
+        onImageChange(file);
+        
+        console.log('프로필 이미지 선택됨:', file.name, `(${(file.size / 1024).toFixed(1)}KB)`);
       };
       reader.readAsDataURL(file);
     }
