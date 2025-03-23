@@ -63,6 +63,16 @@ const userService = {
       throw error;
     }
   },
+
+  // 회원 탈퇴
+  withdrawUser: async () => {
+    try {
+      const response = await api.delete("/user");
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 export default userService;

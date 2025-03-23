@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom'; // React Router 사용 가정
 import Sidebar from '../components/Sidebar';
 import ProfileSection from '../components/mypage/ProfileSection';
 import NotificationSection from '../components/mypage/NotificationSection';
@@ -13,8 +13,9 @@ function MyPage() {
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
-  const user = useSelector((state) => state.user);
+  const navigate = useNavigate();
 
   // 사용자 정보 조회
   useEffect(() => {
@@ -35,7 +36,8 @@ function MyPage() {
           const status = error.response.status;
           if (status === 401) {
             errorMessage = '로그인이 필요합니다.';
-            // 로그인 페이지로 리다이렉트 로직 추가 가능
+            // 로그인 페이지로 리다이렉트
+            navigate('/');
           } else if (status === 404) {
             errorMessage = '존재하지 않는 회원입니다.';
           } else if (error.response.data?.error?.message) {
@@ -50,7 +52,7 @@ function MyPage() {
     };
 
     fetchUserInfo();
-  }, []);
+  }, [navigate]);
 
   // 프로필 업데이트 핸들러
   const handleProfileUpdate = async (updatedUserInfo) => {
@@ -77,31 +79,22 @@ function MyPage() {
     setShowWithdrawalModal(false);
   };
 
-  const handleConfirmWithdrawal = () => {
-    // 회원 탈퇴 로직 구현
-    console.log("회원 탈퇴 처리");
+  // 회원 탈퇴 성공 핸들러
+  const handleWithdrawalSuccess = () => {
+    // 모달 닫기
     setShowWithdrawalModal(false);
-    // 회원 탈퇴 후 로그인 페이지로 리다이렉트 등의 로직 추가
+    
+    // 성공 메시지 설정
+    setSuccessMessage('회원 탈퇴가 완료되었습니다.');
+    
+    // Redux에서 사용자 정보 및 토큰 제거
+    // dispatch(logout());
+    
+    // 3초 후 로그인 페이지로 리다이렉트
+    setTimeout(() => {
+      navigate('/');
+    }, 3000);
   };
-
-  // 공지사항 데이터 (API 연동 가능)
-  const notifications = [
-    {
-      id: 3,
-      content: '"베스트파 코리 본사..." 정품이 발생했어요',
-      date: '2025-02-28 12:00:13'
-    },
-    {
-      id: 2,
-      content: '"벌집양꿀 정품이" 발생했어요',
-      date: '2025-02-27 12:23:21'
-    },
-    {
-      id: 1,
-      content: '"벌집양꿀 정품이" 발생했어요',
-      date: '2025-02-26 12:50:52'
-    }
-  ];
 
   return (
     <div className="flex h-screen w-full text-white">
@@ -113,9 +106,16 @@ function MyPage() {
       {/* 메인 컨텐츠 */}
       <div className="flex-grow p-6 flex flex-col items-center">
         {loading ? (
-          null
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            <span className="ml-2">로딩 중...</span>
+          </div>
         ) : error ? (
           <div className="text-red-500 mt-8">{error}</div>
+        ) : successMessage ? (
+          <div className="bg-green-400/20 text-green-400 p-4 rounded-lg mt-8">
+            {successMessage}
+          </div>
         ) : (
           <div className="max-w-2xl w-full flex flex-col items-center">
             {/* 프로필 섹션 */}
@@ -126,7 +126,7 @@ function MyPage() {
               />
             )}
 
-            {/* 공지사항 섹션 */}
+            {/* 알람 섹션 */}
             <NotificationSection
               notifications={notifications}
               currentPage={currentPage}
@@ -155,7 +155,7 @@ function MyPage() {
       {showWithdrawalModal && (
         <WithdrawalConfirmationModal
           onClose={handleCloseWithdrawalModal}
-          onConfirm={handleConfirmWithdrawal}
+          onConfirm={handleWithdrawalSuccess}
         />
       )}
     </div>

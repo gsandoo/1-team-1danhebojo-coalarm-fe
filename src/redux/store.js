@@ -5,8 +5,7 @@ import { configureStore, createSlice } from "@reduxjs/toolkit";
 const userSlice = createSlice({
   name: "user",
   initialState: {
-    token:
-      "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIzOTY3ODg3MzcyIiwiaWF0IjoxNzQyNjk1NjkwLCJleHAiOjE3NDI3ODIwOTB9.2cD5rdZMpxKEW-VIWpJRJTObaK9kM4Whc1_qOmqbBVc",
+    token: "",
   },
   reducers: {
     setToken: (state, action) => {
