@@ -27,12 +27,9 @@ jobs:
         run: npm ci
         
       - name: Build App
-        run: |
-          # HTTPS 비활성화 모드로 빌드 실행
-          npm run build -- --mode development
+        run: npm run build -- --mode development
         env:
-          # 빌드 시 HTTPS 비활성화
-          VITE_SERVER_HTTPS: false
+          VITE_DISABLE_HTTPS: "true"
         
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
