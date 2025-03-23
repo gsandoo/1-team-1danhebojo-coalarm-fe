@@ -34,9 +34,12 @@ function Login() {
             </div>
             
             {/* 카카오 로그인 버튼 */}
-            <button className="bg-yellow-300 text-gray-800 font-medium py-4 px-6 rounded-full w-72 text-center hover:bg-yellow-400 transition-colors text-lg">
+            <a
+                href="https://localhost:8443/oauth2/authorization/kakao"
+                className="inline-block bg-yellow-300 text-gray-800 font-medium py-4 px-6 rounded-full w-72 text-center hover:bg-yellow-400 transition-colors text-lg"
+            >
               카카오로 로그인
-            </button>
+            </a>
           </div>
         </div>
 
