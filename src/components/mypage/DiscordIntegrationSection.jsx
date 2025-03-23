@@ -1,5 +1,6 @@
 // src/components/mypage/DiscordIntegrationSection.jsx
 import React, { useState } from 'react';
+import axios from 'axios';
 import { IconSettings } from '../../assets/images/mypage/Icons';
 import DiscordWebhookModal from '../modals/DiscordWebhookModal';
 import Toast from '../common/Toast';
@@ -46,31 +47,19 @@ function DiscordIntegrationSection() {
     try {
       console.log('디스코드 웹훅 연동 시도:', webhookUrl);
       
-      const response = await fetch(`${API_URL}/user/discord`, {
+      const response = await axios({
         method: 'PATCH',
+        url: `${API_URL}/user/discord`,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${TOKEN}`,
+          'Authorization': `Bearer ${TOKEN}`
         },
-        body: JSON.stringify({ web_hook_url: webhookUrl }),
+        data: {
+          web_hook_url: webhookUrl
+        }
       });
 
-      // 응답이 JSON인지 확인
-      const contentType = response.headers.get('content-type');
-      let data;
-      
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        console.log('JSON이 아닌 응답:', await response.text());
-        data = { status: 'error', error: { message: '서버에서 올바른 형식의 응답을 받지 못했습니다.' }};
-      }
-
-      if (!response.ok) {
-        throw new Error(data.error?.message || '알 수 없는 오류가 발생했습니다.');
-      }
-
-      console.log('디스코드 웹훅 연동 성공:', data);
+      console.log('디스코드 웹훅 연동 성공:', response.data);
       
       // 성공적으로 연동된 경우
       setIsModalOpen(false);
@@ -79,10 +68,15 @@ function DiscordIntegrationSection() {
       
     } catch (err) {
       console.error('Discord webhook 연동 오류:', err);
-      setError(err.message);
-
+      
+      // 에러 메시지 처리
+      const errorMessage = err.response?.data?.error?.message || 
+                          err.message || 
+                          '알 수 없는 오류가 발생했습니다.';
+      
+      setError(errorMessage);
       // 오류 토스트 메시지 표시
-      showToast(err.message, 'error');
+      showToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
