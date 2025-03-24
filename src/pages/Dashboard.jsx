@@ -45,48 +45,48 @@ function Dashboard() {
       setIsLoading(true);
       try {
         // 통합 대시보드 API 요청
-        const dashboardResponse = await dashboardApi.getDashboardIndex(coinId);
+        // const dashboardResponse = await dashboardApi.getDashboardIndex(coinId);
         
-        // 요청 성공 및 데이터 확인
-        if (dashboardResponse.data.status === "success" && dashboardResponse.data.data) {
-          const dashboardData = dashboardResponse.data.data;
+        // // 요청 성공 및 데이터 확인
+        // if (dashboardResponse.data.status === "success" && dashboardResponse.data.data) {
+        //   const dashboardData = dashboardResponse.data.data;
           
-          // 코인 정보 설정
-          if (dashboardData.coin) {
-            setCoinData({
-              coinId: dashboardData.coin.coinId,
-              symbol: dashboardData.coin.symbol,
-              name: dashboardData.coin.name
-            });
-          }
+        //   // 코인 정보 설정
+        //   if (dashboardData.coin) {
+        //     setCoinData({
+        //       coinId: dashboardData.coin.coinId,
+        //       symbol: dashboardData.coin.symbol,
+        //       name: dashboardData.coin.name
+        //     });
+        //   }
           
-          // RSI 데이터 설정
-          if (dashboardData.rsi !== undefined) {
-            setRsiData(dashboardData.rsi);
-          }
+        //   // RSI 데이터 설정
+        //   if (dashboardData.rsi !== undefined) {
+        //     setRsiData(dashboardData.rsi);
+        //   }
           
-          // MACD 데이터 설정
-          if (dashboardData.macd) {
-            setMacdData({
-              macd: dashboardData.macd.value || -987.29,
-              signal: dashboardData.macd.signal || -687.23,
-              histogram: dashboardData.macd.histogram || -489.38,
-              trend: dashboardData.macd.trend || 'FALL'
-            });
-          }
+        //   // MACD 데이터 설정
+        //   if (dashboardData.macd) {
+        //     setMacdData({
+        //       macd: dashboardData.macd.value || -987.29,
+        //       signal: dashboardData.macd.signal || -687.23,
+        //       histogram: dashboardData.macd.histogram || -489.38,
+        //       trend: dashboardData.macd.trend || 'FALL'
+        //     });
+        //   }
           
-          // 롱/숏 비율 데이터 설정
-          if (dashboardData.ratio) {
-            setShortLongData({
-              longRatio: dashboardData.ratio.long || 52.39,
-              shortRatio: dashboardData.ratio.short || 47.61
-            });
-          }
-        }
+        //   // 롱/숏 비율 데이터 설정
+        //   if (dashboardData.ratio) {
+        //     setShortLongData({
+        //       longRatio: dashboardData.ratio.long || 52.39,
+        //       shortRatio: dashboardData.ratio.short || 47.61
+        //     });
+        //   }
+        // }
         
         // 김치 프리미엄 데이터 가져오기
         const kimchiPremiumResponse = await dashboardApi.getKimchiPremium(0, 5);
-        setKimchiPremiumData(kimchiPremiumResponse.contents || mockKimchiPremiumData);
+        setKimchiPremiumData(mockKimchiPremiumData);
         
         // 최근 거래 내역 가져오기
         setRecentTransactions( mockTransactions);
@@ -96,6 +96,7 @@ function Dashboard() {
         setWhaleTransactions(mockWhaleTransactions);
         
             
+        
         // 공포&탐욕 지수 가져오기 (API가 있는 경우)
         try {
             setFearGreedIndex({
@@ -175,61 +176,37 @@ const handleCoinSearch = async (term) => {
   setSearchError(null);
   
   try {
-      const response = await dashboardApi.searchCoins(term);
-      console.log(response);
-      
-      if (response.data && response.status === "success") {
-        const foundCoin = response.data;
-
-        console.log(foundCoin)
-        
-        // 검색 결과가 올바른 형식인지 확인
-        if (foundCoin && typeof foundCoin === 'object' && 'coinId' in foundCoin && 'name' in foundCoin && 'symbol' in foundCoin) {
-          // 검색 결과 설정 - 필요한 속성만 추출하여 저장
-          setSearchResult({
-            coinId: foundCoin.coinId,
-            name: foundCoin.name,
-            symbol: foundCoin.symbol
-          });
-          
-          // 최근 검색 기록에 추가 (중복 제거)
-          setRecentSearches(prev => {
-            // 이미 있는 항목 제거
-            const filtered = prev.filter(item => item.coinId !== foundCoin.coinId);
-            // 새 항목을 맨 앞에 추가 - 필요한 속성만 추출
-            const newItem = {
-              coinId: foundCoin.coinId,
-              name: foundCoin.name,
-              symbol: foundCoin.symbol
-            };
-            const updated = [newItem, ...filtered].slice(0, 5); // 최대 5개까지만 저장
-            
-            // localStorage에 저장
-            localStorage.setItem('recentCoinSearches', JSON.stringify(updated));
-            
-            return updated;
-          });
-          
-          // 자동으로 차트 업데이트
-          setCoinData({
-            coinId: foundCoin.coinId,
-            symbol: foundCoin.symbol,
-            name: foundCoin.name
-          });
-        } else {
-          console.error('잘못된 응답 형식:', foundCoin);
-          setSearchError("응답 데이터 형식이 올바르지 않습니다.");
-        }
-      } else {
-        setSearchError("검색 결과가 없습니다.");
-      }
-    } catch (error) {
-      console.error('코인 검색 실패:', error);
-      setSearchError("코인 검색 중 오류가 발생했습니다.");
-    } finally {
-      setIsSearching(false);
-    }
-  };
+    const response = await dashboardApi.searchCoins(term);
+    console.log("전체 응답:", response);
+    console.log("response.data:", response.data);
+    
+    // 여기에서는 임시로 하드코딩된 데이터를 사용
+    // const mockCoin = {
+    //   coinId: 1,
+    //   name: "비트코인",
+    //   symbol: "BTC"
+    // };
+    
+    setSearchResult(response.data);
+    
+    // 최근 검색 기록에 추가
+    setRecentSearches(prev => {
+      const filtered = prev.filter(item => item.coinId !== response.data.coinId);
+      const updated = [response.data, ...filtered].slice(0, 5);
+      localStorage.setItem('recentCoinSearches', JSON.stringify(updated));
+      return updated;
+    });
+    
+    // 차트 업데이트
+    setCoinData(response.data);
+    
+  } catch (error) {
+    console.error('코인 검색 실패:', error);
+    setSearchError("코인 검색 중 오류가 발생했습니다.");
+  } finally {
+    setIsSearching(false);
+  }
+};
 
   return (
     <div className="flex bg-[#0E106C] min-h-screen max-w-screen overflow-hidden">
@@ -296,8 +273,16 @@ const handleCoinSearch = async (term) => {
                 <div className="bg-blue-900 rounded-lg p-4">
                   <div className="flex items-center mb-4">
                     <div className="flex items-center">
-                      <div className="mr-2 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center">
-                        <span className="text-black font-bold text-xs">₿</span>
+                      <div className="mr-2 w-6 h-6 flex items-center justify-center rounded-full overflow-hidden">
+                        <img 
+                          src={`https://static.upbit.com/logos/${coinData.symbol}.png`} 
+                          alt={`${coinData.symbol} 로고`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.parentNode.innerHTML = `<div class="bg-yellow-400 w-full h-full flex items-center justify-center"><span class="text-black font-bold text-xs">${coinData.symbol.charAt(0)}</span></div>`;
+                          }}
+                        />
                       </div>
                       <h3 className="text-white font-medium">{coinData.name}</h3>
                       <span className="text-gray-300 ml-2 text-sm">{coinData.symbol}/KRW</span>
@@ -374,8 +359,16 @@ const handleCoinSearch = async (term) => {
                       }}
                     >
                       <div className="flex items-center">
-                        <div className="mr-2 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center">
-                          <span className="text-black font-bold text-xs">{searchResult.symbol.charAt(0)}</span>
+                        <div className="mr-2 w-6 h-6 flex items-center justify-center rounded-full overflow-hidden">
+                          <img 
+                            src={`https://static.upbit.com/logos/${searchResult.symbol}.png`} 
+                            alt={`${searchResult.symbol} 로고`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.parentNode.innerHTML = `<div class="bg-yellow-400 w-full h-full flex items-center justify-center"><span class="text-black font-bold text-xs">${searchResult.symbol.charAt(0)}</span></div>`;
+                            }}
+                          />
                         </div>
                         <div>
                           <h4 className="text-white font-medium">{searchResult.name}</h4>
@@ -410,8 +403,16 @@ const handleCoinSearch = async (term) => {
                             }}
                           >
                             <div className="flex items-center">
-                              <div className="mr-2 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center">
-                                <span className="text-black font-bold text-xs">{coin.symbol.charAt(0)}</span>
+                              <div className="mr-2 w-6 h-6 flex items-center justify-center rounded-full overflow-hidden">
+                                <img 
+                                  src={`https://static.upbit.com/logos/${coin.symbol}.png`} 
+                                  alt={`${coin.symbol} 로고`}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.parentNode.innerHTML = `<div class="bg-yellow-400 w-full h-full flex items-center justify-center"><span class="text-black font-bold text-xs">${coin.symbol.charAt(0)}</span></div>`;
+                                  }}
+                                />
                               </div>
                               <div>
                                 <h4 className="text-white font-medium">{coin.name}</h4>
