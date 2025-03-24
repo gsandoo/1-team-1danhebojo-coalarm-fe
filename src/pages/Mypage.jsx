@@ -114,14 +114,6 @@ function MyPage() {
     }, 3000);
   };
 
-  const handleWithdrawalClick = () => {
-    setShowWithdrawalModal(true);
-  };
-
-  const handleCloseWithdrawalModal = () => {
-    setShowWithdrawalModal(false);
-  };
-
   const handleConfirmWithdrawal = () => {
     // 회원 탈퇴 로직 구현
     console.log("회원 탈퇴 처리");

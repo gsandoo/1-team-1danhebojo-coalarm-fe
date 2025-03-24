@@ -1,8 +1,62 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import ToggleSwitch from "./ToggleSwitch.jsx";
 import coin from "../../assets/images/alarm/coin.png";
+import {client} from "../../pages/alarm/client.js";
 
-const AlarmCard = () => {
+const AlarmCard = ({
+    alertId,
+    active
+                   }) => {
+    const [isActive, setIsActive] = useState(active);
+
+    // 알람 활성화 상태 변경 API
+    const updateAlarmStatus = async (alertId, data) => {
+        return await client.request({
+            method: "PATCH",
+            url: `alerts/${alertId}/status`,
+            data: data
+        })
+    };
+
+    // 알람 목록 조회 API
+    const getAlarms = async (offset, limit, filter, sort) => {
+        return await client.request({
+            method: "GET",
+            url: `alerts`,
+            params: {
+                offset,
+                limit,
+                filter,
+                sort
+            }
+        })
+    };
+
+    // 알람 활성화 토글
+    const handleToggle = async (isActive) => {
+        try {
+            setIsActive(isActive);
+            await updateAlarmStatus(alertId, {
+                'status': isActive
+            });
+        } catch (error) {
+            console.error("알람 상태 변경 실패:", error);
+            setIsActive(!isActive);
+        }
+    };
+
+    // 알람 삭제 상태 변경 API
+    const deleteAlarm = async (alertId) => {
+        return await client.request({
+            method: "DELETE",
+            url: `alerts/${alertId}`
+        })
+    };
+
+    useEffect(async () => {
+        const result = await getAlarms(0, 5, 'BTC', 'LATEST');
+        console.log(result);
+    }, [])
 
     return (
         <div className="w-[540px] h-[432px] p-[30px] bg-[#081159] rounded-[20px]">
@@ -12,7 +66,7 @@ const AlarmCard = () => {
                 <span className="text-gray-300 text-[14px]">BTC/KRW</span>
 
                 <div className="ml-auto">
-                    <ToggleSwitch />
+                    <ToggleSwitch initialState={isActive} onToggle={handleToggle} />
                 </div>
             </div>
 
@@ -32,10 +86,11 @@ const AlarmCard = () => {
             </div>
 
             <div className="mb-6 flex items-center justify-center">
-                <button
-                    className="w-[179px] h-[48px] rounded-[100px] bg-[#0D1D98] shadow-[0px_4px_8px_0px_rgba(0,0,0,0.10)]">
+                <div className="w-[179px] h-[48px] leading-[48px] text-center rounded-[100px] bg-[#0D1D98] shadow-[0px_4px_8px_0px_rgba(0,0,0,0.10)]"
+                    onClick={() => deleteAlarm(alertId)}
+                >
                     삭제하기
-                </button>
+                </div>
             </div>
         </div>
     );
