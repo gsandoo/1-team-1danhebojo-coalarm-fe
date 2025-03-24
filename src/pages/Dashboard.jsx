@@ -134,7 +134,7 @@ function Dashboard() {
         console.error('Failed to parse recent searches:', e);
       }
     }
-        
+    
     return () => clearInterval(intervalId);
   }, [coinId]); // coinId가 변경될 때마다 데이터 재요청
   
