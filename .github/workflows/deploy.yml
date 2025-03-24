@@ -30,7 +30,7 @@ jobs:
         run: echo "${{ secrets.ENV_DEVELOPMENT }}" > .env.development
     
       - name: Build App
-        run: npm run build -- --mode development
+        run: npm run build --mode development
         env:
           VITE_DISABLE_HTTPS: "true"
         
