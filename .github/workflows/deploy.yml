@@ -3,7 +3,7 @@ name: Deploy Coalarm
 on:
   push:
     branches:
-      - main  
+      - main
     paths-ignore:
       - 'README.md'
       - '.gitignore'
@@ -12,7 +12,6 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -22,35 +21,36 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          
+
       - name: Install Dependencies
         run: npm ci
-        
+
       - name: Create env file
         run: echo "${{ secrets.ENV_DEVELOPMENT }}" > .env.development
-    
+
       - name: Build App
-        run: npm run build --mode development
+        run: npm run build
         env:
           VITE_DISABLE_HTTPS: "true"
-        
+          NODE_ENV: "development"
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-          
+
       - name: Deploy to S3
         run: |
           aws s3 sync dist/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
-          
+
       - name: Invalidate CloudFront Cache
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*"
-            
+
       - name: Deployment Status
         run: |
           echo "Deployment completed successfully."
