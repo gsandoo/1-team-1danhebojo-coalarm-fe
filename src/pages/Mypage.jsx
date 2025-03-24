@@ -18,48 +18,75 @@ function MyPage() {
   const navigate = useNavigate();
 
   // 사용자 정보 조회
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        setLoading(true);
-        const userData = await userApi.getUserInfo();
-        setUserInfo(userData);
-      } catch (error) {
-        let errorMessage = '사용자 정보를 불러오는데 실패했습니다.';
-        
-        if (error.response) {
-          const status = error.response.status;
-          if (status === 401) {
-            errorMessage = '로그인이 필요합니다.';
-            // 로그인 페이지로 리다이렉트
-            navigate('/');
-          } else if (status === 404) {
-            errorMessage = '존재하지 않는 회원입니다.';
-          } else if (error.response.data?.error?.message) {
-            errorMessage = error.response.data.error.message;
-          }
+  const fetchUserInfo = async () => {
+    try {
+      setLoading(true);
+      const userData = await userApi.getUserInfo();
+      console.log('사용자 정보 조회 결과:', userData);
+      setUserInfo(userData);
+    } catch (error) {
+      console.error('사용자 정보 조회 에러:', error);
+      let errorMessage = '사용자 정보를 불러오는데 실패했습니다.';
+      
+      if (error.response) {
+        const status = error.response.status;
+        if (status === 401) {
+          errorMessage = '로그인이 필요합니다.';
+          // 로그인 페이지로 리다이렉트
+          navigate('/');
+        } else if (status === 404) {
+          errorMessage = '존재하지 않는 회원입니다.';
+        } else if (error.response.data?.error?.message) {
+          errorMessage = error.response.data.error.message;
         }
-        
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
       }
-    };
+      
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchUserInfo();
   }, [navigate]);
 
   // 프로필 업데이트 핸들러
   const handleProfileUpdate = async (updatedUserInfo) => {
-    setUserInfo(updatedUserInfo);
-    
-    // 프로필 업데이트 후 최신 사용자 정보를 다시 가져옴
     try {
-      const userData = await userApi.getUserInfo();
-      setUserInfo(userData);
+      // 부분 업데이트 반영
+      setUserInfo(prevUserInfo => ({
+        ...prevUserInfo,
+        ...updatedUserInfo
+      }));
+      
+      // 최신 사용자 정보를 다시 가져옴
+      await fetchUserInfo();
       console.log('사용자 정보 갱신 완료');
     } catch (error) {
       console.error('사용자 정보 갱신 실패:', error);
+    }
+  };
+
+  // 디스코드 웹훅 업데이트 핸들러
+  const handleWebhookUpdate = async (newWebhookUrl) => {
+    // userInfo 객체를 복제하고 웹훅 URL 업데이트
+    setUserInfo(prevUserInfo => {
+      if (!prevUserInfo) return null;
+      
+      return {
+        ...prevUserInfo,
+        discordWebhook: newWebhookUrl
+      };
+    });
+    
+    console.log('디스코드 웹훅 URL 업데이트:', newWebhookUrl);
+    
+    // 최신 데이터로 다시 갱신 (선택적)
+    try {
+      await fetchUserInfo();
+    } catch (error) {
+      console.error('디스코드 웹훅 업데이트 후 사용자 정보 갱신 실패:', error);
     }
   };
 
@@ -125,12 +152,13 @@ function MyPage() {
             {/* 디스코드 연동 섹션 */}
             <DiscordIntegrationSection 
               discordWebhook={userInfo?.discordWebhook} 
+              onWebhookUpdate={handleWebhookUpdate}
             />
 
             {/* 회원 탈퇴 링크 */}
             <div className="mt-[40px] text-center">
               <span
-                className="text-xs text-blue-300 hover:underline cursor-pointer"
+                className="text-s text-blue-300 hover:underline cursor-pointer"
                 onClick={handleWithdrawalClick}
               >
                 회원 탈퇴하기

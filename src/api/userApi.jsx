@@ -9,11 +9,30 @@ const userApi = {
   },
 
 
-  //디스코드 웹훅 URL 연동
-  connectDiscord: (webHookUrl) => {
-    return axiosInstance.patch('/users/discord', {
-      web_hook_url: webHookUrl
-    });
+  //디스코드 웹훅 URL 연동 또는 삭제
+  connectDiscord: async (webHookUrl) => {
+    try {
+      const requestData = {
+        web_hook_url: webHookUrl
+      };
+
+      // 백엔드 API 호출
+      const response = await axiosInstance.patch('/users/discord', requestData);
+      
+      return response.data;
+
+    } catch (error) {
+      // 백엔드 에러 처리
+      if (error.response?.status === 400) {
+        throw new Error('유효하지 않은 디스코드 웹훅 URL입니다.');
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else if (error.message) {
+        throw error; // 이미 Error 객체인 경우
+      } else {
+        throw new Error('디스코드 웹훅 연동 중 오류가 발생했습니다.');
+      }
+    }
   },
 
   //회원 정보 수정
