@@ -8,6 +8,7 @@ import goldCoins1 from '../assets/images/login/Gold Coins-1.png';
 import goldCoins from '../assets/images/login/Gold Coins.png';
 
 function Login() {
+
   return (
     <>
       <div className="w-screen h-screen flex">
@@ -33,9 +34,12 @@ function Login() {
             </div>
             
             {/* 카카오 로그인 버튼 */}
-            <button className="bg-yellow-300 text-gray-800 font-medium py-4 px-6 rounded-full w-72 text-center hover:bg-yellow-400 transition-colors text-lg">
+            <a
+                href={import.meta.env.VITE_KAKAO_URL}
+                className="inline-block bg-yellow-300 text-gray-800 font-medium py-4 px-6 rounded-full w-72 text-center hover:bg-yellow-400 transition-colors text-lg"
+            >
               카카오로 로그인
-            </button>
+            </a>
           </div>
         </div>
 

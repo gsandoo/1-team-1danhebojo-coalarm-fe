@@ -1,6 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
+import userApi from '../../api/userApi';
 
 function WithdrawalConfirmationModal({ onClose, onConfirm }) {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleWithdrawal = async () => {
+    try {
+      setIsProcessing(true);
+      setError(null);
+      
+      // API 호출
+      await userApi.deleteAccount();
+      
+      // 상위 컴포넌트에 성공 알림
+      onConfirm();
+      
+      // 로그인 페이지로 리다이렉트
+      window.location.href = '/login'; // 또는 React Router를 사용
+    } catch (error) {
+      let errorMessage = '회원 탈퇴 처리 중 오류가 발생했습니다.';
+      
+      if (error.response) {
+        const status = error.response.status;
+        
+        if (status === 401) {
+          errorMessage = '인증되지 않은 사용자입니다.';
+        } else if (status === 404) {
+          errorMessage = '존재하지 않는 회원입니다.';
+        } else if (error.response.data?.error?.message) {
+          errorMessage = error.response.data.error.message;
+        }
+      }
+      
+      setError(errorMessage);
+      console.error('회원 탈퇴 오류:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* 전체 화면 블러 처리 배경 */}
@@ -28,22 +67,31 @@ function WithdrawalConfirmationModal({ onClose, onConfirm }) {
             정말 코알람을 떠나시나요? 
             <span className="ml-1 text-yellow-400">😢</span>
           </h2>
-          
-          <p className="text-gray-300 text-center mb-12 max-w-md">
-            회원 탈퇴시 모든 알림과 데이터가 사용되어 복구되지 않습니다.
+
+          <p className="text-gray-300 text-center mb-8 max-w-md">
+            회원 탈퇴시 모든 알림과 데이터가 삭제되어 복구되지 않습니다.
           </p>
+          
+          {/* 에러 메시지 */}
+          {error && (
+            <div className="text-red-400 text-sm mb-4">
+              {error}
+            </div>
+          )}
           
           {/* 버튼 영역 */}
           <div className="flex space-x-4">
             <button 
-              onClick={onConfirm}
-              className="bg-[#0D1D98] hover:bg-[#0D1D98]/90 text-white font-medium w-[180px] h-[56px] rounded-full transition-colors"
+              onClick={handleWithdrawal}
+              disabled={isProcessing}
+              className={`bg-[#0D1D98] hover:bg-[#0D1D98]/90 text-white font-medium w-[180px] h-[56px] rounded-full transition-colors ${isProcessing ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              네
+              {isProcessing ? '처리 중...' : '네'}
             </button>
             <button 
               onClick={onClose}
-              className="bg-[#1631FE] hover:bg-[#1631FE]/90 text-white font-medium w-[180px] h-[56px] rounded-full transition-colors"
+              disabled={isProcessing}
+              className={`bg-[#1631FE] hover:bg-[#1631FE]/90 text-white font-medium w-[180px] h-[56px] rounded-full transition-colors ${isProcessing ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
               아니오
             </button>
