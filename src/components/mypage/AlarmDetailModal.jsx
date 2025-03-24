@@ -9,6 +9,26 @@ function AlarmDetailModal({ onClose, alertData }) {
   const { title, coin, alertType, goldenCross } = alert || {};
   const { name, symbol } = coin || {};
 
+  // 날짜 포맷팅
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+    } catch (error) {
+      return dateString;
+    }
+  };
+
   // 알림 유형에 따른 설명 텍스트
   const getAlertTypeDescription = () => {
     switch(alertType) {
@@ -36,6 +56,9 @@ function AlarmDetailModal({ onClose, alertData }) {
   };
 
   const alertTypeDesc = getAlertTypeDescription();
+
+  // 포맷된 날짜
+  const formattedDate = formatDate(registeredDate);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -67,7 +90,7 @@ function AlarmDetailModal({ onClose, alertData }) {
           <div className="mb-6">
             <p className="text-gray-300 mb-2 pb-1 border-b border-[#B7BFFF]">코인</p>
             <div className="bg-[#E8EAFF] text-[#343A7D] py-3 px-4 rounded-[10px]">
-              <p className="font-medium text-xs">코인명 : {name || "비트코인"} {symbol || "BTC"}</p>
+              <p className="font-medium text-s">코인명 : {name || "비트코인"} {symbol || "BTC"}</p>
             </div>
           </div>
 
@@ -122,7 +145,7 @@ function AlarmDetailModal({ onClose, alertData }) {
               <p className="text-gray-300 pb-1 border-b border-[#B7BFFF] w-full">알람 발생 일시</p>
             </div>
             <div className="bg-[#E8EAFF] text-[#343A7D] py-3 px-4 rounded-[10px]">
-              <p className="font-medium">{registeredDate || "2025-03-12 12:34:56"}</p>
+              <p className="font-medium">{formattedDate || "2025-03-12 12:34:56"}</p>
             </div>
           </div>
 

@@ -25,7 +25,7 @@ const userApi = {
     }
     
     if (userData.profileImage) {
-      formData.append('profile_image', userData.profileImage);
+      formData.append('profileImage', userData.profileImage);
     }
     
     return axiosInstance.patch('/users', formData, {
@@ -33,6 +33,19 @@ const userApi = {
         'Content-Type': 'multipart/form-data',
       },
     });
+  },
+
+  // 알람 히스토리 목록 조회
+  getAlertHistory: (offset = 0, limit = 5) => {
+    return axiosInstance.get('/alerts/history', {
+      params: { offset, limit }
+    });
+  },
+
+  // 알람 히스토리 상세 조회
+  getAlertDetail: async (alertHistoryId) => {
+    const response = await axiosInstance.get(`/alerts/history/${alertHistoryId}`);
+    return response;
   },
 
   //회원 탈퇴
