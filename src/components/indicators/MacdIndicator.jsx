@@ -1,13 +1,20 @@
-// src/components/indicators/MacdIndicator.jsx
 import React, { useState } from 'react';
 
 function MacdIndicator({ macd, signal, histogram }) {
   const [showTooltip, setShowTooltip] = useState(false);
-  
+
+  const formatNumber = (value) => {
+    return Number(value).toFixed(2);
+  };
+
+  const getTrendText = () => {
+    return Number(macd) > Number(signal) ? '상승' : '하락';
+  };
+
   return (
     <div className="bg-blue-900 rounded-lg p-4 relative">
       <div className="flex justify-between items-center mb-3">
-        <h3 className="text-white text-sm">MACD</h3>
+        <h3 className="text-white text-xl font-bold">MACD</h3>
         <div className="relative">
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
@@ -22,31 +29,27 @@ function MacdIndicator({ macd, signal, histogram }) {
           
           {showTooltip && (
             <div className="absolute right-0 w-64 bg-gray-800 text-white p-2 rounded-md text-xs z-10 shadow-lg">
-              <p><strong>MACD:</strong> 단기 이동선, 장기 이동선 차이 / 음수면 하락세, 정수면 상승세</p>
-              <p className="mt-1"><strong>SIGNAL:</strong> 매매시점 판단하는 기준. MACD가 SIGNAL보다 높으면 매수 신호, 반대면 매도 신호</p>
-              <p className="mt-1"><strong>HISTOGRAM:</strong> MACD - SIGNAL</p>
-              <p className="mt-1"><strong>추세:</strong> 추세 강도</p>
+              <p><strong>MACD:</strong> 단기 이동선, 장기 이동선 차이 / 음수면 하락세, 양수면 상승세</p>
+              <p className="mt-1"><strong>Signal:</strong> 매매 시점 판단 기준. MACD가 Signal보다 높으면 매수 신호, 낮으면 매도 신호</p>
+              <p className="mt-1"><strong>Histogram:</strong> MACD - Signal</p>
+              <p className="mt-1"><strong>추세:</strong> 추세 강도 (MACD와 Signal 비교)</p>
             </div>
           )}
         </div>
       </div>
-      <div className="text-white mt-2">
-        <div className="flex justify-between mb-2">
-          <span>MACD:</span>
-          <span className="text-white">{macd}</span>
-        </div>
-        <div className="flex justify-between mb-2">
-          <span>Signal:</span>
-          <span className="text-white">{signal}</span>
-        </div>
-        <div className="flex justify-between mb-2">
-          <span>Histogram:</span>
-          <span className="text-white">{histogram}</span>
-        </div>
-        <div className="flex justify-between mb-1">
-          <span>추세:</span>
-          <span className="text-white">{Number(macd) > Number(signal) ? '상승' : '하락'}</span>
-        </div>
+
+      <div className="text-white mt-4 space-y-3 text-base">
+        {[
+          { label: 'MACD', value: formatNumber(macd) },
+          { label: 'Signal', value: formatNumber(signal) },
+          { label: 'Histogram', value: formatNumber(histogram) },
+          { label: '추세', value: getTrendText() },
+        ].map(({ label, value }) => (
+          <div key={label} className="flex justify-between items-center">
+            <span className="text-white/80">{label}</span>
+            <span className="text-lg font-semibold text-white">{value}</span>
+          </div>
+        ))}
       </div>
     </div>
   );
