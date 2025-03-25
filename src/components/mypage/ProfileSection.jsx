@@ -82,6 +82,10 @@ const ProfileSection = ({ userInfo, onProfileUpdate }) => {
       
       // 파일 업로드 후 프로필 이미지 상태 초기화
       setProfileImage(null);
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 0);
       
       // 3초 후 성공 메시지 사라지게 설정
       setTimeout(() => {
