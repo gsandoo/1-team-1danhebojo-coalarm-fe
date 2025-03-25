@@ -4,10 +4,28 @@ import React, { useState } from 'react';
 function RsiIndicator({ value }) {
   const [showTooltip, setShowTooltip] = useState(false);
   
+  const formatRsiValue = (val) => {
+    return Number(val).toFixed(1);
+  };
+
+  const getRsiStatusText = () => {
+    if (value <= 30) return '과매도';
+    if (value >= 70) return '과매수';
+    return '중립';
+  };
+
+  // 상태 텍스트 색상
+  const getStatusColor = () => {
+    if (value <= 30) return 'text-[#EF4444]'; // 과매도
+    if (value >= 70) return 'text-[#10B981]'; // 과매수
+    return 'text-white'; // 중립
+  };
+
+  
   return (
     <div className="bg-blue-900 rounded-lg p-4 relative">
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="text-white text-sm">RSI</h3>
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-white text-xl font-bold">RSI</h3>
         <div className="relative">
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
@@ -29,21 +47,19 @@ function RsiIndicator({ value }) {
         </div>
       </div>
       
-      <div className="text-white text-5xl font-bold text-center mt-3 mb-6">{value}</div>
+      <div className="flex flex-col items-center justify-center mb-4">
+      <div className={`text-center font-bold text-2xl ${getStatusColor()}`}>{getRsiStatusText()}</div>
+        <div className={`text-white text-5xl font-bold text-center mt-1 ${getStatusColor()}`}>{formatRsiValue(value)}</div>
+      </div>
       
       <div className="mt-3">
-        <div className="w-full bg-gray-700 h-4 rounded-full overflow-hidden mb-1">
-          <div 
-            className="h-full bg-yellow-500" 
-            style={{ width: `${value}%` }}
-          ></div>
+        {/* 상태 바 */}
+        <div className="mt-3">
+          <div className="w-full h-3 bg-gray-600 rounded-full overflow-hidden">
+            <div className="h-full" style={{ width: `${value}%`, backgroundColor: '#B7BFFF' }}></div>
+          </div>
         </div>
-        
-        <div className="flex justify-between text-xs mt-1">
-          <span className="text-green-500">과매도</span>
-          <span className="text-yellow-500 font-medium">중립</span>
-          <span className="text-red-500">과매수</span>
-        </div>
+
       </div>
     </div>
   );

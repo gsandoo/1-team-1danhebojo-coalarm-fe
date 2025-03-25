@@ -45,68 +45,56 @@ function Dashboard() {
       setIsLoading(true);
       try {
         // 통합 대시보드 API 요청
-        // const dashboardResponse = await dashboardApi.getDashboardIndex(coinId);
-        
-        // // 요청 성공 및 데이터 확인
-        // if (dashboardResponse.data.status === "success" && dashboardResponse.data.data) {
-        //   const dashboardData = dashboardResponse.data.data;
+        const dashboardResponse = await dashboardApi.getDashboardIndex(coinId);
+        console.log("대시보드 응답", dashboardResponse)
+        console.log(dashboardResponse.status)
+        console.log(dashboardResponse.data)
+        // 요청 성공 및 데이터 확인
+        if (dashboardResponse.status === "success" && dashboardResponse.data) {
+          const dashboardData = dashboardResponse.data;
+
+          console.log(dashboardData)
           
-        //   // 코인 정보 설정
-        //   if (dashboardData.coin) {
-        //     setCoinData({
-        //       coinId: dashboardData.coin.coinId,
-        //       symbol: dashboardData.coin.symbol,
-        //       name: dashboardData.coin.name
-        //     });
-        //   }
-          
-        //   // RSI 데이터 설정
-        //   if (dashboardData.rsi !== undefined) {
-        //     setRsiData(dashboardData.rsi);
-        //   }
-          
-        //   // MACD 데이터 설정
-        //   if (dashboardData.macd) {
-        //     setMacdData({
-        //       macd: dashboardData.macd.value || -987.29,
-        //       signal: dashboardData.macd.signal || -687.23,
-        //       histogram: dashboardData.macd.histogram || -489.38,
-        //       trend: dashboardData.macd.trend || 'FALL'
-        //     });
-        //   }
-          
-        //   // 롱/숏 비율 데이터 설정
-        //   if (dashboardData.ratio) {
-        //     setShortLongData({
-        //       longRatio: dashboardData.ratio.long || 52.39,
-        //       shortRatio: dashboardData.ratio.short || 47.61
-        //     });
-        //   }
-        // }
-        
-        // 김치 프리미엄 데이터 가져오기
-        const kimchiPremiumResponse = await dashboardApi.getKimchiPremium(0, 5);
-        setKimchiPremiumData(mockKimchiPremiumData);
-        
-        // 최근 거래 내역 가져오기
-        setRecentTransactions( mockTransactions);
-       
-        
-        // 고래 거래 내역 가져오기
-        setWhaleTransactions(mockWhaleTransactions);
-        
-            
-        
-        // 공포&탐욕 지수 가져오기 (API가 있는 경우)
-        try {
-            setFearGreedIndex({
-              bull:  55.0,
-              bear:  50.0
+          // 코인 정보 설정
+          if (dashboardData.coin) {
+            setCoinData({
+              coinId: dashboardData.coin.coinId,
+              symbol: dashboardData.coin.symbol,
+              name: dashboardData.coin.name
             });
-        } catch (fearGreedError) {
-          console.error("공포&탐욕 지수 불러오기 실패:", fearGreedError);
-          // 기본값 유지
+          }
+          
+          // RSI 데이터 설정
+          if (dashboardData.rsi && dashboardData.rsi.value !== undefined) {
+            setRsiData(Number(dashboardData.rsi.value));
+            console.log(rsiData)
+          }
+          
+          // MACD 데이터 설정
+          if (dashboardData.macd) {
+            setMacdData({
+              macd: Number(dashboardData.macd.value),
+              signal: Number(dashboardData.macd.signal),
+              histogram: Number(dashboardData.macd.histogram),
+              trend: dashboardData.macd.trend
+            });
+          }
+          
+          // 롱/숏 비율 데이터 설정
+          if (dashboardData.ratio && 
+              dashboardData.ratio.longRatio !== undefined && 
+              dashboardData.ratio.shortRatio !== undefined) {
+            setShortLongData({
+              longRatio: Number(dashboardData.ratio.longRatio),
+              shortRatio: Number(dashboardData.ratio.shortRatio)
+            });
+          }
         }
+        
+        // 김치 프리미엄 데이터, 거래 내역 등은 목업 데이터 사용
+        setKimchiPremiumData(mockKimchiPremiumData);
+        setRecentTransactions(mockTransactions);
+        setWhaleTransactions(mockWhaleTransactions);
         
       } catch (err) {
         console.error("데이터 불러오기 실패:", err);
@@ -123,7 +111,7 @@ function Dashboard() {
     
     fetchData();
     
-    // 5초마다 데이터 업데이트 (실제 운영 환경에서는 적절한 간격으로 조정)
+    // 15초마다 데이터 업데이트
     const intervalId = setInterval(fetchData, 15000);
     
     // 최근 검색 기록 불러오기
@@ -140,11 +128,13 @@ function Dashboard() {
   }, [coinId]); // coinId가 변경될 때마다 데이터 재요청
   
   // 김치 프리미엄 예시 데이터
-  const mockKimchiPremiumData = [
-    { coin: 'BTC', domesticPrice: 128448000, globalPrice: 86086.82, kimchiPremium: 2.84 },
-    { coin: 'ALGO', domesticPrice: 377.00, globalPrice: 0.29, kimchiPremium: 3.12 },
-    { coin: 'STMX', domesticPrice: 5.82, globalPrice: 0.00, kimchiPremium: -11.27 }
-  ];
+  const mockKimchiPremiumData = {
+    contents: [
+      { premiumId: 1, coin: 'BTC', domesticPrice: 128448000, globalPrice: 86086.82, kimchiPremium: 2.84, dailyChange: 1.2 },
+      { premiumId: 2, coin: 'ALGO', domesticPrice: 377.00, globalPrice: 0.29, kimchiPremium: 3.12, dailyChange: 0.5 },
+      { premiumId: 3, coin: 'STMX', domesticPrice: 5.82, globalPrice: 0.00, kimchiPremium: -11.27, dailyChange: -2.3 }
+    ]
+  };
   
   // 예시 데이터 (API 연결 전 테스트용)
   const mockTransactions = [
@@ -168,45 +158,39 @@ function Dashboard() {
     return new Intl.NumberFormat('ko-KR').format(value);
   };
 
-// 코인 검색 핸들러
-const handleCoinSearch = async (term) => {
-  if (!term.trim()) return;
-  
-  setIsSearching(true);
-  setSearchError(null);
-  
-  try {
-    const response = await dashboardApi.searchCoins(term);
-    console.log("전체 응답:", response);
-    console.log("response.data:", response.data);
+  // 코인 검색 핸들러
+  const handleCoinSearch = async (term) => {
+    if (!term.trim()) return;
     
-    // 여기에서는 임시로 하드코딩된 데이터를 사용
-    // const mockCoin = {
-    //   coinId: 1,
-    //   name: "비트코인",
-    //   symbol: "BTC"
-    // };
+    setIsSearching(true);
+    setSearchError(null);
     
-    setSearchResult(response.data);
-    
-    // 최근 검색 기록에 추가
-    setRecentSearches(prev => {
-      const filtered = prev.filter(item => item.coinId !== response.data.coinId);
-      const updated = [response.data, ...filtered].slice(0, 5);
-      localStorage.setItem('recentCoinSearches', JSON.stringify(updated));
-      return updated;
-    });
-    
-    // 차트 업데이트
-    setCoinData(response.data);
-    
-  } catch (error) {
-    console.error('코인 검색 실패:', error);
-    setSearchError("코인 검색 중 오류가 발생했습니다.");
-  } finally {
-    setIsSearching(false);
-  }
-};
+    try {
+      const response = await dashboardApi.searchCoins(term);
+      
+      if (response.data && response.data.data) {
+        setSearchResult(response.data.data);
+        
+        // 최근 검색 기록에 추가
+        setRecentSearches(prev => {
+          const filtered = prev.filter(item => item.coinId !== response.data.data.coinId);
+          const updated = [response.data.data, ...filtered].slice(0, 5);
+          localStorage.setItem('recentCoinSearches', JSON.stringify(updated));
+          return updated;
+        });
+        
+        // 차트 업데이트
+        setCoinData(response.data.data);
+      } else {
+        setSearchError("코인 검색 결과가 없습니다.");
+      }
+    } catch (error) {
+      console.error('코인 검색 실패:', error);
+      setSearchError("코인 검색 중 오류가 발생했습니다.");
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   return (
     <div className="flex bg-[#0E106C] min-h-screen max-w-screen overflow-hidden">
@@ -222,7 +206,7 @@ const handleCoinSearch = async (term) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-white text-sm">현재 투자에 대한 직접적 투자권유를 목적으로 작성되지 않았다는 점 고려바랍니다. 코알람은 투자 판단을 돕기 위한 정보 제공 서비스일 뿐입니다.</p>
+          <p className="text-white text-sm">모든 투자에 대한 책임은 전적으로 투자자 본인에게 있습니다. 코알람은 투자 판단을 돕기 위한 정보 제공 서비스일 뿐, 어떠한 투자 결정도 대신하지 않습니다.</p>
           <button className="absolute right-3 text-white">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -244,7 +228,7 @@ const handleCoinSearch = async (term) => {
             {/* 지표 카드 그리드 */}
             <div className="grid grid-cols-4 gap-4 mb-5">
               {/* 공포 & 탐욕 지수 (Bull) */}
-              <FearGreedIndex label="공격" value={fearGreedIndex.bull} />
+              <FearGreedIndex label="공포" value={fearGreedIndex.bull} />
               
               {/* 공포 & 탐욕 지수 (Bear) */}
               {/* <FearGreedIndex label="방어" value={fearGreedIndex.bear} /> */}
