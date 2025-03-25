@@ -17,7 +17,7 @@ function Dashboard() {
   const { coinId = 1 } = useParams();
 
   const [coinData, setCoinData] = useState({ symbol: 'BTC', name: '비트코인' });
-  const [fearGreedIndex, setFearGreedIndex] = useState({ bull: 55.0, bear: 50.0 });
+  const [fearGreedIndex, setFearGreedIndex] = useState(55.0);
   const [macdData, setMacdData] = useState({ 
     macd: -987.29, 
     signal: -687.23, 
@@ -126,6 +126,17 @@ function Dashboard() {
     
     return () => clearInterval(intervalId);
   }, [coinId]); // coinId가 변경될 때마다 데이터 재요청
+
+  useEffect(() => {
+    dashboardApi.getFearGreedIndex()
+      .then((fg) => {
+        setFearGreedIndex(fg.value);
+      })
+      .catch((err) => {
+        console.error("공포탐욕 API 실패", err);
+      });
+  }, []);
+  
   
   // 김치 프리미엄 예시 데이터
   const mockKimchiPremiumData = {
@@ -227,11 +238,8 @@ function Dashboard() {
           <>
             {/* 지표 카드 그리드 */}
             <div className="grid grid-cols-4 gap-4 mb-5">
-              {/* 공포 & 탐욕 지수 (Bull) */}
-              <FearGreedIndex label="공포" value={fearGreedIndex.bull} />
-              
-              {/* 공포 & 탐욕 지수 (Bear) */}
-              {/* <FearGreedIndex label="방어" value={fearGreedIndex.bear} /> */}
+              {/* 공포 & 탐욕 지수 */}
+              <FearGreedIndex value={fearGreedIndex} />
               
               {/* MACD */}
               <MacdIndicator 

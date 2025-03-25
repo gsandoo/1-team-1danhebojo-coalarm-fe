@@ -73,7 +73,16 @@ const dashboardApi = {
    * @returns {Promise} API 응답
    */
   getFearGreedIndex: () => {
-    return axiosInstance.get(`/indicators/fear-greed`);
+    return fetch('https://api.alternative.me/fng/')
+    .then(res => res.json())
+    .then(data => {
+      const index = data?.data?.[0];
+      return {
+        value: Number(index?.value || 0),
+        label: index?.value_classification || 'Unknown',
+        updatedAt: Number(index?.timestamp || 0),
+      };
+    });
   },
   
   /**
