@@ -67,7 +67,7 @@ function WithdrawalConfirmationModal({ onClose, onConfirm }) {
             정말 코알람을 떠나시나요? 
             <span className="ml-1 text-yellow-400">😢</span>
           </h2>
-          
+
           <p className="text-gray-300 text-center mb-8 max-w-md">
             회원 탈퇴시 모든 알림과 데이터가 삭제되어 복구되지 않습니다.
           </p>

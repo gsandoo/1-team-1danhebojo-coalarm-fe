@@ -131,7 +131,7 @@ function NotificationSection({ currentPage, setCurrentPage }) {
               <div className="col-span-9 text-gray-200">제목</div>
               <div className="col-span-2 text-center text-gray-200">일시</div>
             </div>
-            
+
             {loading ? (
               <div className="text-center py-10 text-white">로딩 중...</div>
             ) : error ? (

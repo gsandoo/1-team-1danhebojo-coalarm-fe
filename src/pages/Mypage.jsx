@@ -5,6 +5,7 @@ import ProfileSection from '../components/mypage/ProfileSection';
 import NotificationSection from '../components/mypage/NotificationSection';
 import DiscordIntegrationSection from '../components/mypage/DiscordIntegrationSection';
 import WithdrawalConfirmationModal from '../components/mypage/WithdrawalConfirmationModal';
+
 import userApi from '../api/userApi';
 
 function MyPage() {
@@ -111,6 +112,13 @@ function MyPage() {
     setTimeout(() => {
       navigate('/');
     }, 3000);
+  };
+
+  const handleConfirmWithdrawal = () => {
+    // 회원 탈퇴 로직 구현
+    console.log("회원 탈퇴 처리");
+    setShowWithdrawalModal(false);
+    // 여기에 회원 탈퇴 후 로그인 페이지로 리다이렉트 등의 로직 추가
   };
 
   return (
