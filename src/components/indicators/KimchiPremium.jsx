@@ -1,9 +1,34 @@
-// src/components/indicators/KimchiPremium.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import dashboardApi from '../../api/dashboardApi';
 
-function KimchiPremium({ markets = [] }) {
+function KimchiPremium() {
+  const [premiumData, setPremiumData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showTooltip, setShowTooltip] = useState(false);
-  const marketData = markets.contents || markets;
+  
+  useEffect(() => {
+    const fetchKimchiPremium = async () => {
+      try {
+        setLoading(true);
+        const response = await dashboardApi.getKimchiPremium(0, 5);
+
+        if (response && response.contents) {
+          setPremiumData(response.contents);
+        } else {
+          setPremiumData([]);
+          console.warn('김치 프리미엄 데이터가 예상된 형식이 아닙니다:', response);
+        }
+      } catch (err) {
+        console.error('김치 프리미엄 데이터 로드 실패:', err);
+        setError('데이터를 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchKimchiPremium();
+  }, []);
   
   return (
     <div className="bg-blue-900 rounded-lg p-4 relative">
@@ -32,42 +57,53 @@ function KimchiPremium({ markets = [] }) {
         </div>
       </div>
       
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="text-gray-400 border-b border-gray-700">
-            <th className="py-2">(KRW)</th>
-            <th className="py-2 text-right">(USDT)</th>
-            <th className="py-2 text-right">+</th>
-          </tr>
-        </thead>
-        <tbody>
-          {marketData && marketData.length > 0 ? (
-            marketData.map((market) => (
-              <tr key={market.premiumId} className="border-b border-gray-700">
-                <td className="py-2 flex items-center">
-                  <div className={`w-3 h-3 rounded-full mr-2 ${market.dailyChange >= 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                  <span className="text-white">{market.coin || '?'}</span>
-                </td>
-                <td className={`py-2 text-right ${market.dailyChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {market.domesticPrice.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
-                </td>
-                <td className="py-2 text-right text-gray-400">
-                  {market.globalPrice.toLocaleString('en-US', { maximumFractionDigits: 2 })}
-                </td>
-                <td className={`py-2 text-right font-medium ${market.kimchiPremium >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {market.kimchiPremium >= 0 ? '+' : ''}{market.kimchiPremium.toFixed(2)}%
+      {loading ? (
+        <div className="text-center py-4 text-gray-400">
+          로딩 중...
+        </div>
+      ) : error ? (
+        <div className="text-center py-4 text-red-400">
+          {error}
+        </div>
+      ) : (
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="text-gray-400 border-b border-gray-700">
+              <th className="py-2">코인</th>
+              <th className="py-2 text-right">국내(KRW)</th>
+              <th className="py-2 text-right">해외(USDT)</th>
+              <th className="py-2 text-right">프리미엄</th>
+            </tr>
+          </thead>
+          <tbody>
+            {premiumData && premiumData.length > 0 ? (
+              premiumData.map((market) => (
+                <tr key={market.premiumId} className="border-b border-gray-700">
+                  <td className="py-2 flex items-center">
+                    <div className={`w-3 h-3 rounded-full mr-2 ${market.dailyChange >= 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <span className="text-white">{market.coin?.symbol || '?'}</span>
+                  </td>
+                  <td className="py-2 text-right text-white">
+                    {Number(market.domesticPrice).toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
+                  </td>
+                  <td className="py-2 text-right text-gray-400">
+                    {Number(market.globalPrice).toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                  </td>
+                  <td className={`py-2 text-right font-medium ${Number(market.kimchiPremium) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {Number(market.kimchiPremium) >= 0 ? '+' : ''}{Number(market.kimchiPremium).toFixed(2)}%
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="py-4 text-center text-gray-400">
+                  데이터가 없습니다.
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="4" className="py-4 text-center text-gray-400">
-                데이터가 없습니다.
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            )}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
