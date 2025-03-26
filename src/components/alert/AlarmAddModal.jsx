@@ -284,7 +284,6 @@ function AlarmAddModal({ onClose, onSave }) {
         withCredentials: true,
       });
       alert("알람이 저장되었습니다!");
-      onSave(payload); // 콜백 전달
       onClose();       // 모달 닫기
     } catch (error) {
       console.error("알람 저장 실패:", error);
