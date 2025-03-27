@@ -155,8 +155,9 @@ const AlertPage = () => {
     };
 
     return (
-        <div className="flex h-screen text-white">
+        <>
             <Sidebar />
+            <div className="flex text-white h-screen pt-[80px] pl-[300px]">
             <div className="flex-1 h-full overflow-y-auto px-[220px] py-[60px]">
                 {/*알람 등록 버튼*/}
                 <div className="flex justify-end mb-8">
@@ -263,7 +264,6 @@ const AlertPage = () => {
                     <div ref={loadMoreRef} className="h-[40px] bg-transparent"/>
                 </div>
 
-                {/* 알람 삭제 확인 모달 - 사이드바를 고려한 위치 */}
                 {isDeleteOpen && (
                     <AlarmDeleteModal
                         onClose={() => dispatch(closeDeleteModal())}
@@ -279,6 +279,7 @@ const AlertPage = () => {
                 )}
             </div>
         </div>
+    </>
     );
 }
 

@@ -11,7 +11,7 @@ const Header = () => {
     };
     
     return (
-        <header className="flex justify-between items-center p-6 h-[80px] bg-[#0d1846] text-white">
+        <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center p-6 h-[80px] bg-[#0d1846] text-white">
             <div className="flex items-center">
                 <button className="mr-4">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24"

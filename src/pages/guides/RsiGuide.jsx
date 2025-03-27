@@ -4,6 +4,7 @@ import GuideLayout from '../../components/layouts/GuideLayout';
 
 function RsiGuide() {
   return (
+    <div className="flex min-h-screen pt-[80px] pl-[300px]">
     <GuideLayout title="RSI (Relative Strength Index)">
       <div className="text-white">
         <div className="mb-8">
@@ -76,6 +77,7 @@ function RsiGuide() {
         </div>
       </div>
     </GuideLayout>
+    </div>
   );
 }
 

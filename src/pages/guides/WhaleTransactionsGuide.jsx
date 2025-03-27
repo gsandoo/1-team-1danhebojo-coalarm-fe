@@ -4,6 +4,7 @@ import GuideLayout from '../../components/layouts/GuideLayout';
 
 function WhaleTransactionsGuide() {
   return (
+    <div className="flex min-h-screen pt-[80px] pl-[300px]">
     <GuideLayout title="고래 체결 내역 (Whale Transactions)">
       <div className="text-white">
         <div className="mb-8">
@@ -196,6 +197,7 @@ function WhaleTransactionsGuide() {
         </div>
       </div>
     </GuideLayout>
+    </div>
   );
 }
 

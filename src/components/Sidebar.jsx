@@ -61,7 +61,7 @@ function Sidebar() {
   };
 
   return (
-    <div className="w-[300px] bg-[#0a0d50] flex flex-col h-screen overflow-hidden flex-shrink-0">
+    <div className="fixed top-[80px] left-0 w-[300px] bg-[#0a0d50] flex flex-col h-[calc(100vh-80px)] overflow-hidden flex-shrink-0 z-40">
 
       <div className="flex flex-col items-center mt-6 mb-8">
         <div className="w-20 h-20 rounded-full bg-gray-200 overflow-hidden">
