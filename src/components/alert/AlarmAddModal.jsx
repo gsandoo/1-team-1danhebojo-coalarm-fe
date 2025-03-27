@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from "axios";
 
-function AlarmAddModal({ onClose }) {
+function AlarmAddModal({ onClose, onAddAlert }) {
   const [title, setTitle] = useState('');
   const [selectedCoin, setSelectedCoin] = useState('');
   const [selectedType, setSelectedType] = useState('');
@@ -19,6 +19,7 @@ function AlarmAddModal({ onClose }) {
   const coinInputRef = useRef(null);
   const dropdownRef = useRef(null);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [calculatedPrice, setCalculatedPrice] = useState(null);
 
   const UpbitDashboard = () => {
     const [coins, setCoins] = useState([]);
@@ -195,6 +196,17 @@ function AlarmAddModal({ onClose }) {
 
     init();
 
+    // 지정가를 이미 선택한 상태에서 코인을 선택할 때 값 변경
+    if (selectedType === "지정가" && selectedCoin?.price && targetPercentage.trim() !== '') {
+      const percentage = parseFloat(targetPercentage);
+      if (!isNaN(percentage)) {
+        const calc = Math.round(selectedCoin.price * (1 + percentage / 100));
+        setCalculatedPrice(calc);
+      }
+    } else {
+      setCalculatedPrice(null);
+    }
+
     const handleClickOutside = (event) => {
       if (
           percentDropdownRef.current &&
@@ -219,7 +231,7 @@ function AlarmAddModal({ onClose }) {
       isMounted = false;
       ws.current?.close();
     }
-  }, []);
+  }, [selectedCoin, targetPercentage, selectedType]);
 
   const handleTitleChange = (e) => {
     const value = e.target.value;
@@ -257,15 +269,13 @@ function AlarmAddModal({ onClose }) {
       }
 
       // 실시간 현재가 기반으로 타겟 가격 계산
-      const currentPrice = selectedCoin.price;
       const percentage = parseFloat(targetPercentage);
-      const targetPrice = Math.round(currentPrice * (1 + percentage / 100));
 
       payload = {
         ...baseData,
         type: "TARGET_PRICE",
         percentage: percentage,
-        target_price: targetPrice,
+        target_price: calculatedPrice,
       };
     } else if (selectedType === "골든 크로스") {
       payload = {
@@ -280,12 +290,27 @@ function AlarmAddModal({ onClose }) {
     }
 
     try {
-      await axios.post("https://localhost:8443/api/v1/alerts", payload, {
+      const response = await axios.post("https://localhost:8443/api/v1/alerts", payload, {
         withCredentials: true,
+        validateStatus: () => true,
       });
-      onClose();       // 모달 닫기
+
+      if (response.status === 200) {
+        const createdAlert = response.data.data;
+        if (onAddAlert) {
+          onAddAlert(createdAlert);
+        }
+        onClose(); // 모달 닫기
+      } else if (response.status === 409) {
+        alert(response.data.data?.error?.message || "이미 등록된 알람입니다.");
+      } else if (response.status === 500) {
+        alert("서버 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
+      } else {
+        alert(`알 수 없는 오류 발생 (status: ${response.status})`);
+      }
     } catch (error) {
-      console.error("알람 저장 실패:", error);
+      console.error("요청 실패 (Axios 자체 문제 등):", error);
+      alert("요청 중 문제가 발생했어요. 네트워크 상태를 확인해주세요.");
     }
   };
 
@@ -353,8 +378,16 @@ function AlarmAddModal({ onClose }) {
                               <li
                                   key={option}
                                   onClick={() => {
-                                    setTargetPercentage(option.replace('%', ''));
+                                    const value = option.replace('%', '');
+                                    setTargetPercentage(value);
                                     setShowPercentDropdown(false);
+
+                                    // 계산된 가격 업데이트
+                                    const numericValue = parseFloat(value);
+                                    if (selectedCoin?.price) {
+                                      const calc = Math.round(selectedCoin.price * (1 + numericValue / 100));
+                                      setCalculatedPrice(calc);
+                                    }
                                   }}
                                   className={`px-3 py-2 hover:bg-blue-100 cursor-pointer text-sm font-medium ${colorClass}`}
                               >
@@ -367,7 +400,10 @@ function AlarmAddModal({ onClose }) {
                 </div>
 
                 <span className="text-xs text-gray-500">
-                  ({selectedCoin?.price?.toLocaleString() || '0'} 원)
+                  {calculatedPrice
+                      ? `(${calculatedPrice.toLocaleString()} 원)`
+                      : `(${selectedCoin?.price?.toLocaleString() || '0'} 원)`
+                  }
                 </span>
               </div>
             </div>
@@ -548,7 +584,7 @@ function AlarmAddModal({ onClose }) {
                         <div key={type} className="flex justify-between items-center mb-4 last:mb-0">
                           <span className="text-[#2D2D2D]">{type}</span>
                           <button
-                              className={`w-12 h-6 rounded-full p-1 transition-colors ${selectedType === type ? 'bg-[#0A1672]' : 'bg-[#B7BFFF]'}`}
+                              className={`w-12 h-6 rounded-full p-1 transition-colors ${selectedType === type ? 'bg-[#B7BFFF]' : 'bg-[#0A1672]'}`}
                               onClick={() => handleTypeSelect(type)}
                           >
                             <div
