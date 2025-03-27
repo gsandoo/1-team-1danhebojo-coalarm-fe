@@ -157,17 +157,6 @@ function Sidebar() {
           로그아웃
         </button>
       </div>
-      
-      <div className="p-4 border-t border-blue-800">
-        <div className="flex items-center justify-center">
-          <button className="flex items-center text-white text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z" />
-            </svg>
-            디스코드 바로가기
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
