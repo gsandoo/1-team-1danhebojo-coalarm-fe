@@ -20,6 +20,7 @@ import LongShortGuide from './pages/guides/LongShortGuide';
 import KimchiPremiumGuide from './pages/guides/KimchiPremiumGuide';
 import WhaleTransactionsGuide from './pages/guides/WhaleTransactionsGuide';
 import Header from "./components/Header.jsx";
+import { Navigate } from 'react-router-dom';
 
 const AppContent = () => {
   const location = useLocation();
