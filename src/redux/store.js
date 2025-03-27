@@ -1,6 +1,7 @@
 // src/store/index.js
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 import deleteModalSlice from "./deleteModalSlice.js";
+import createAlertModalSlice from "./createAlertModalSlice.js";
 
 // 카운터 슬라이스 생성 (값 하나만 관리)
 const userSlice = createSlice({
@@ -22,7 +23,8 @@ export const { setToken } = userSlice.actions;
 export const store = configureStore({
   reducer: {
     user: userSlice.reducer,
-    deleteModal: deleteModalSlice.reducer
+    deleteModal: deleteModalSlice.reducer,
+    createAlertModal: createAlertModalSlice.reducer
   },
 });
 

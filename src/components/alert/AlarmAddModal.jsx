@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from "axios";
 
-function AlarmAddModal({ onClose, onSave }) {
+function AlarmAddModal({ onClose }) {
   const [title, setTitle] = useState('');
   const [selectedCoin, setSelectedCoin] = useState('');
   const [selectedType, setSelectedType] = useState('');
@@ -283,11 +283,9 @@ function AlarmAddModal({ onClose, onSave }) {
       await axios.post("https://localhost:8443/api/v1/alerts", payload, {
         withCredentials: true,
       });
-      alert("알람이 저장되었습니다!");
       onClose();       // 모달 닫기
     } catch (error) {
       console.error("알람 저장 실패:", error);
-      alert("알람 저장에 실패했습니다.");
     }
   };
 
