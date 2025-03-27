@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Tooltip from '../common/Tooltip';
 
 function LongShortRatio({ longRatio, shortRatio }) {
   const [showTooltip, setShowTooltip] = useState(false);
@@ -25,13 +26,11 @@ function LongShortRatio({ longRatio, shortRatio }) {
               clipRule="evenodd"
             />
           </svg>
-          {showTooltip && (
-            <div className="absolute right-0 w-64 bg-gray-800 text-white p-2 rounded-md text-xs z-10 shadow-lg">
-              <p>바이낸스 선물 비트코인 롱/숏 포지션 비율</p>
-              <p className="mt-1"><strong>롱 포지션:</strong> 상승을 예상한 매수 포지션</p>
-              <p className="mt-1"><strong>숏 포지션:</strong> 하락을 예상한 매도 포지션</p>
-            </div>
-          )}
+          <Tooltip visible={showTooltip}>
+            <p className="mb-3">바이낸스 선물 비트코인 롱/숏 포지션 비율</p>
+            <p className="mb-3"><strong>롱 포지션:</strong> 상승을 예상한 매수 포지션</p>
+            <p className="leading-relaxed"><strong>숏 포지션:</strong> 하락을 예상한 매도 포지션</p>
+          </Tooltip>
         </div>
       </div>
 

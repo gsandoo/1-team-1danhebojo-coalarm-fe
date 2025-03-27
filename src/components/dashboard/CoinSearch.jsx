@@ -165,7 +165,7 @@ const CoinSearch = ({ onSelectCoin }) => {
             </div>
             <div>
               <h4 className="text-white font-medium">{searchResult.name}</h4>
-              <p className="text-gray-400 text-xs">{searchResult.symbol}/KRW</p>
+              <p className="text-gray-400 text-xs">{searchResult.symbol}</p>
             </div>
           </div>
         </div>
@@ -199,7 +199,7 @@ const CoinSearch = ({ onSelectCoin }) => {
                       </div>
                       <div>
                         <h4 className="text-white font-medium">{coin.name}</h4>
-                        <p className="text-gray-400 text-xs">{coin.symbol}/KRW</p>
+                        <p className="text-gray-400 text-xs">{coin.symbol}</p>
                       </div>
                     </div>
                     <div className="text-white text-lg font-bold">

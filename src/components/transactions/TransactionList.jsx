@@ -1,6 +1,7 @@
 // src/components/transactions/TransactionList.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Tooltip from '../common/Tooltip';
 
 function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
   const [transactions, setTransactions] = useState([]);
@@ -158,15 +159,13 @@ function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
           </svg>
           
-          {showTooltip && (
-            <div className="absolute right-0 w-64 bg-gray-800 text-white p-2 rounded-md text-sm z-10 shadow-lg">
-              {isWhale ? (
-                <p>1,000만원 이상의 {symbol} 거래를 실시간으로 표시합니다.</p>
-              ) : (
-                <p>실시간으로 업데이트되는 {symbol} 거래 내역입니다.</p>
-              )}
-            </div>
-          )}
+          <Tooltip visible={showTooltip}>
+            {isWhale ? (
+              <p className="leading-relaxed">1,000만원 이상의 {symbol} 거래를 실시간으로 표시합니다.</p>
+            ) : (
+              <p className="leading-relaxed">실시간으로 업데이트되는 {symbol} 거래 내역입니다.</p>
+            )}
+          </Tooltip>
         </div>
       </div>
       
