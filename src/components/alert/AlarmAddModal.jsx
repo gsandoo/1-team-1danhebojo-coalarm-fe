@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from "axios";
 
-function AlarmAddModal({ onClose }) {
+function AlarmAddModal({ onClose, onAddAlert }) {
   const [title, setTitle] = useState('');
   const [selectedCoin, setSelectedCoin] = useState('');
   const [selectedType, setSelectedType] = useState('');
@@ -196,6 +196,17 @@ function AlarmAddModal({ onClose }) {
 
     init();
 
+    // 지정가를 이미 선택한 상태에서 코인을 선택할 때 값 변경
+    if (selectedType === "지정가" && selectedCoin?.price && targetPercentage.trim() !== '') {
+      const percentage = parseFloat(targetPercentage);
+      if (!isNaN(percentage)) {
+        const calc = Math.round(selectedCoin.price * (1 + percentage / 100));
+        setCalculatedPrice(calc);
+      }
+    } else {
+      setCalculatedPrice(null);
+    }
+
     const handleClickOutside = (event) => {
       if (
           percentDropdownRef.current &&
@@ -220,7 +231,7 @@ function AlarmAddModal({ onClose }) {
       isMounted = false;
       ws.current?.close();
     }
-  }, []);
+  }, [selectedCoin, targetPercentage, selectedType]);
 
   const handleTitleChange = (e) => {
     const value = e.target.value;
@@ -279,9 +290,14 @@ function AlarmAddModal({ onClose }) {
     }
 
     try {
-      await axios.post("https://localhost:8443/api/v1/alerts", payload, {
+      const response = await axios.post("https://localhost:8443/api/v1/alerts", payload, {
         withCredentials: true,
       });
+
+      const createdAlert = response.data.data;
+      if (onAddAlert) {
+        onAddAlert(createdAlert);
+      }
       onClose();       // 모달 닫기
     } catch (error) {
       console.error("알람 저장 실패:", error);
