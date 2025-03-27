@@ -6,6 +6,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["Pretendard", "sans-serif"],
+      },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0', transform: 'translate(-50%, -20px)' },

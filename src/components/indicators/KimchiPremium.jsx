@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import dashboardApi from '../../api/dashboardApi';
+import Tooltip from '../common/Tooltip';
 
 function KimchiPremium() {
   const [premiumData, setPremiumData] = useState([]);
@@ -46,7 +47,7 @@ function KimchiPremium() {
   );
   
   return (
-    <div className="bg-blue-900 rounded-lg p-5 relative">
+    <div className="bg-blue-900 rounded-lg p-5 relative h-[300px]">
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-white text-xl font-bold">김치 프리미엄</h3>
         <div className="relative">
@@ -61,12 +62,10 @@ function KimchiPremium() {
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
           </svg>
           
-          {showTooltip && (
-            <div className="absolute right-0 w-64 bg-gray-800 text-white p-3 rounded-md text-xs z-10 shadow-lg">
-              <p><strong>국내 거래소:</strong> 업비트 / <strong>해외 거래소:</strong> 바이낸스</p>
-              <p className="mt-2">국내 거래소에서 코인이 해외 거래소보다 비싸게 거래되는 현상</p>
-            </div>
-          )}
+          <Tooltip visible={showTooltip}>
+            <p className="mb-3"><strong>국내 거래소:</strong> 업비트 / <strong>해외 거래소:</strong> 바이낸스</p>
+            <p className="leading-relaxed">국내 거래소에서 코인이 해외 거래소보다 비싸게 거래되는 현상</p>
+          </Tooltip>
         </div>
       </div>
       
