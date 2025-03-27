@@ -46,7 +46,7 @@ function KimchiPremium() {
   );
   
   return (
-    <div className="bg-blue-900 rounded-lg p-5 relative">
+    <div className="bg-blue-900 rounded-lg p-5 relative h-[300px]">
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-white text-xl font-bold">김치 프리미엄</h3>
         <div className="relative">
