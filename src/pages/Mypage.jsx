@@ -122,14 +122,13 @@ function MyPage() {
   };
 
   return (
-    <div className="flex h-screen w-full text-white">
+    <div className="flex text-white min-h-screen pt-[80px] pl-[300px]">
       {/* 사이드바 - 고정 너비 */}
-      <div className="w-[228px] flex-shrink-0">
-        <Sidebar />
-      </div>
+      <Sidebar />
 
       {/* 메인 컨텐츠 */}
-      <div className="flex-grow p-6 flex flex-col items-center">
+      <div className="flex-grow p-6 flex flex-col items-center overflow-y-auto w-full">
+
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>

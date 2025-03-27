@@ -4,6 +4,7 @@ import GuideLayout from '../../components/layouts/GuideLayout';
 
 function KimchiPremiumGuide() {
   return (
+    <div className="flex min-h-screen pt-[80px] pl-[300px]">
     <GuideLayout title="김치 프리미엄 (Kimchi Premium)">
       <div className="text-white">
         <div className="mb-8">
@@ -163,6 +164,7 @@ function KimchiPremiumGuide() {
         </div>
       </div>
     </GuideLayout>
+    </div>
   );
 }
 

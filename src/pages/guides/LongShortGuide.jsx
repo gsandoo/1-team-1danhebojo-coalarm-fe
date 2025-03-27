@@ -4,6 +4,7 @@ import GuideLayout from '../../components/layouts/GuideLayout';
 
 function LongShortGuide() {
   return (
+    <div className="flex min-h-screen pt-[80px] pl-[300px]">
     <GuideLayout title="공매수/공매도 지수 (Long/Short Ratio)">
       <div className="text-white">
         <div className="mb-8">
@@ -136,6 +137,7 @@ function LongShortGuide() {
         </div>
       </div>
     </GuideLayout>
+    </div>
   );
 }
 

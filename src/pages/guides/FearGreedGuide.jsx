@@ -4,6 +4,7 @@ import GuideLayout from '../../components/layouts/GuideLayout';
 
 function FearGreedGuide() {
   return (
+    <div className="flex min-h-screen pt-[80px] pl-[300px]">
     <GuideLayout title="공포/탐욕 지수 (Fear & Greed Index)">
       <div className="text-white">
         <div className="mb-8">
@@ -114,6 +115,7 @@ function FearGreedGuide() {
         </div>
       </div>
     </GuideLayout>
+    </div>
   );
 }
 

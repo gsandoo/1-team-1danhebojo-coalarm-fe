@@ -4,6 +4,7 @@ import GuideLayout from '../../components/layouts/GuideLayout';
 
 function MacdGuide() {
   return (
+    <div className="flex min-h-screen pt-[80px] pl-[300px]">
     <GuideLayout title="MACD (Moving Average Convergence Divergence)">
       <div className="text-white">
         <div className="mb-8">
@@ -146,6 +147,7 @@ function MacdGuide() {
         </div>
       </div>
     </GuideLayout>
+    </div>
   );
 }
 

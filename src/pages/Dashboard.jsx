@@ -133,7 +133,7 @@ function Dashboard() {
 
 
   return (
-    <div className="flex bg-[#0E106C] min-h-screen max-w-screen overflow-hidden">
+    <div className="flex bg-[#0E106C] min-h-screen pt-[80px] pl-[300px]">
       {/* 사이드바 컴포넌트 */}
       <Sidebar />
       
