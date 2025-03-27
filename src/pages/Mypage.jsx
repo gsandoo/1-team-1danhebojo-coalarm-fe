@@ -122,7 +122,7 @@ function MyPage() {
   };
 
   return (
-    <div className="flex text-white min-h-screen pt-[80px] pl-[300px]">
+    <div className="flex text-white h-screen pt-[80px] pl-[300px]">
       {/* 사이드바 - 고정 너비 */}
       <Sidebar />
 
