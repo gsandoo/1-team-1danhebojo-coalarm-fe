@@ -164,14 +164,14 @@ function MyPage() {
             />
 
             {/* 회원 탈퇴 링크 */}
-            <div className="mt-[40px] text-center">
+            {/* <div className="mt-[40px] text-center">
               <span
                 className="text-s text-blue-300 hover:underline cursor-pointer"
                 onClick={handleWithdrawalClick}
               >
                 회원 탈퇴하기
               </span>
-            </div>
+            </div> */}
           </div>
         )}
       </div>
