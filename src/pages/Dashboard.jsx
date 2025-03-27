@@ -12,6 +12,7 @@ import KimchiPremium from '../components/indicators/KimchiPremium';
 import TransactionList from '../components/transactions/TransactionList';
 
 import TradingViewChart from '../components/dashboard/TradingViewChart';
+import CoinSearch from '../components/dashboard/CoinSearch';
 
 function Dashboard() {
   const { coinId = 1 } = useParams();
@@ -29,13 +30,7 @@ function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // 코인 검색 관련 상태
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchResult, setSearchResult] = useState(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchError, setSearchError] = useState(null);
-  const [recentSearches, setRecentSearches] = useState([]);
-  
+
   // API 데이터 가져오기
   useEffect(() => {
     const fetchData = async () => {
@@ -122,39 +117,20 @@ function Dashboard() {
     return new Intl.NumberFormat('ko-KR').format(value);
   };
 
-  // 코인 검색 핸들러
-  const handleCoinSearch = async (term) => {
-    if (!term.trim()) return;
-    
-    setIsSearching(true);
-    setSearchError(null);
-    
-    try {
-      const response = await dashboardApi.searchCoins(term);
-      
-      if (response.data && response.data.data) {
-        setSearchResult(response.data.data);
-        
-        // 최근 검색 기록에 추가
-        setRecentSearches(prev => {
-          const filtered = prev.filter(item => item.coinId !== response.data.data.coinId);
-          const updated = [response.data.data, ...filtered].slice(0, 5);
-          localStorage.setItem('recentCoinSearches', JSON.stringify(updated));
-          return updated;
-        });
-        
-        // 차트 업데이트
-        setCoinData(response.data.data);
-      } else {
-        setSearchError("코인 검색 결과가 없습니다.");
-      }
-    } catch (error) {
-      console.error('코인 검색 실패:', error);
-      setSearchError("코인 검색 중 오류가 발생했습니다.");
-    } finally {
-      setIsSearching(false);
+  // 코인 선택 핸들러 추가
+  const handleCoinSelect = (selectedCoin) => {
+    if (selectedCoin && selectedCoin.coinId && selectedCoin.symbol && selectedCoin.name) {
+      // 코인 데이터 업데이트
+      setCoinData({
+        coinId: selectedCoin.coinId,
+        symbol: selectedCoin.symbol,
+        name: selectedCoin.name
+      });
+    } else {
+      console.error("유효하지 않은 코인 데이터:", selectedCoin);
     }
   };
+
 
   return (
     <div className="flex bg-[#0E106C] min-h-screen max-w-screen overflow-hidden">
@@ -215,7 +191,7 @@ function Dashboard() {
             <div className="flex gap-4 mb-5">
               {/* 비트코인 차트 영역 */}
               <div className="flex-grow">
-                <div className="bg-blue-900 rounded-lg p-4">
+                <div className="bg-blue-900 rounded-lg p-4 h-[464px]">
                   <div className="flex items-center mb-4">
                     <div className="flex items-center">
                       <div className="mr-2 w-6 h-6 flex items-center justify-center rounded-full overflow-hidden">
@@ -234,7 +210,7 @@ function Dashboard() {
                     </div>
                   </div>
                   {/* TradingView 차트 컴포넌트 추가 */}
-                  <div className="bg-blue-950 h-96 rounded-md">
+                  <div className="bg-blue-950 h-[390px] rounded-md">
                     <TradingViewChart 
                       symbol={`${coinData.symbol}KRW`} 
                       exchange="UPBIT" 
@@ -245,138 +221,10 @@ function Dashboard() {
                 </div>
               </div>
               
-              {/* 오른쪽 검색 영역 */}
+              {/* 오른쪽 검색 영역 */}  
               <div className="w-80">
-                <div className="bg-blue-900 rounded-lg p-4 mb-4">
-                  <div className="relative mb-2">
-                    <input
-                      type="text"
-                      placeholder="코인명 또는 코드"
-                      className="w-full py-2 px-4 pr-10 rounded-md bg-blue-950 text-white border border-blue-800 focus:outline-none focus:border-blue-700"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          handleCoinSearch(e.target.value);
-                        }
-                      }}
-                    />
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 absolute right-3 top-2.5 text-white opacity-60 cursor-pointer"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      onClick={() => handleCoinSearch(searchTerm)}
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  
-                  {/* 검색 중 로딩 표시 */}
-                  {isSearching && (
-                    <div className="mt-4 bg-blue-950 rounded-md p-3 text-white text-center">
-                      <p>검색 중...</p>
-                    </div>
-                  )}
-                  
-                  {/* 검색 오류 표시 */}
-                  {searchError && (
-                    <div className="mt-4 bg-red-900 rounded-md p-3 text-white text-center">
-                      <p>{searchError}</p>
-                    </div>
-                  )}
-                  
-                  {/* 검색 결과 표시 */}
-                  {searchResult && !isSearching && !searchError && (
-                    <div 
-                      className="mt-4 bg-blue-950 rounded-md p-3 flex items-center justify-between cursor-pointer hover:bg-blue-800 transition"
-                      onClick={() => {
-                        // 코인 데이터 업데이트하여 차트 변경
-                        setCoinData({
-                          coinId: searchResult.coinId,
-                          symbol: searchResult.symbol,
-                          name: searchResult.name
-                        });
-                      }}
-                    >
-                      <div className="flex items-center">
-                        <div className="mr-2 w-6 h-6 flex items-center justify-center rounded-full overflow-hidden">
-                          <img 
-                            src={`https://static.upbit.com/logos/${searchResult.symbol}.png`} 
-                            alt={`${searchResult.symbol} 로고`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.parentNode.innerHTML = `<div class="bg-yellow-400 w-full h-full flex items-center justify-center"><span class="text-black font-bold text-xs">${searchResult.symbol.charAt(0)}</span></div>`;
-                            }}
-                          />
-                        </div>
-                        <div>
-                          <h4 className="text-white font-medium">{searchResult.name}</h4>
-                          <p className="text-gray-400 text-xs">{searchResult.symbol}/KRW</p>
-                        </div>
-                      </div>
-                      <div className="text-white text-xl font-bold">
-                        {/* 실제 API에서 가격 데이터를 받아와야 함 */}
-                        {formatCurrency(Math.floor(Math.random() * 150000000))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* 최근 검색 기록 표시 */}
-                  <div className="mt-4">
-                    <h3 className="text-white text-sm font-medium mb-2">최근 검색 기록</h3>
-                    {recentSearches.length > 0 ? (
-                      <div className="space-y-2">
-                        {recentSearches.slice(0, 3).map((coin) => (
-                          <div 
-                            key={coin.coinId} 
-                            className="bg-blue-950 rounded-md p-3 flex items-center justify-between cursor-pointer hover:bg-blue-800 transition"
-                            onClick={() => {
-                              setSearchTerm(coin.name);
-                              setSearchResult(coin);
-                              // 코인 데이터 업데이트하여 차트 변경
-                              setCoinData({
-                                coinId: coin.coinId,
-                                symbol: coin.symbol,
-                                name: coin.name
-                              });
-                            }}
-                          >
-                            <div className="flex items-center">
-                              <div className="mr-2 w-6 h-6 flex items-center justify-center rounded-full overflow-hidden">
-                                <img 
-                                  src={`https://static.upbit.com/logos/${coin.symbol}.png`} 
-                                  alt={`${coin.symbol} 로고`}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.parentNode.innerHTML = `<div class="bg-yellow-400 w-full h-full flex items-center justify-center"><span class="text-black font-bold text-xs">${coin.symbol.charAt(0)}</span></div>`;
-                                  }}
-                                />
-                              </div>
-                              <div>
-                                <h4 className="text-white font-medium">{coin.name}</h4>
-                                <p className="text-gray-400 text-xs">{coin.symbol}/KRW</p>
-                              </div>
-                            </div>
-                            <div className="text-white text-lg font-bold">
-                              {/* 실제 API에서 가격 데이터를 받아와야 함 */}
-                              {formatCurrency(Math.floor(Math.random() * 150000000))}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="bg-blue-950 rounded-md p-3 text-gray-400 text-center">
-                        <p>검색 기록이 없습니다</p>
-                      </div>
-                    )}
-                  </div>
+                <div>
+                  <CoinSearch onSelectCoin={handleCoinSelect} />
                 </div>
               </div>
             </div>

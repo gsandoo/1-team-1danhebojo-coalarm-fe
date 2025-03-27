@@ -84,10 +84,10 @@ function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
           time: new Date(data.tms).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) // trade_timestamp
         };
         
-        // 고래 거래 필터링 (1억원 이상의 거래)
+        // 고래 거래 필터링 (1,000만원 이상의 거래)
         const tradeAmount = data.tp * data.tv; // 가격 * 거래량 = 거래 금액
         
-        if ((isWhale && tradeAmount >= 100000000) || (!isWhale)) {
+        if ((isWhale && tradeAmount >= 10000000) || (!isWhale)) {
           setTransactions(prev => {
             const newTransactions = [transaction, ...prev].slice(0, 50); // 더 많은 거래 내역 유지 (스크롤 가능)
             return newTransactions;
@@ -161,7 +161,7 @@ function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
           {showTooltip && (
             <div className="absolute right-0 w-64 bg-gray-800 text-white p-2 rounded-md text-sm z-10 shadow-lg">
               {isWhale ? (
-                <p>1억원 이상의 {symbol} 거래를 실시간으로 표시합니다.</p>
+                <p>1,000만원 이상의 {symbol} 거래를 실시간으로 표시합니다.</p>
               ) : (
                 <p>실시간으로 업데이트되는 {symbol} 거래 내역입니다.</p>
               )}
@@ -210,7 +210,7 @@ function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
                     />
                   </div>
                   <div>
-                    <p className="text-white text-base font-bold">{coinNames[symbol] || symbol}</p>
+                    <p className="text-white text-base font-bold">{symbol}</p>
                     <p className="text-gray-400 text-sm">{tx.time}</p>
                   </div>
                 </div>
