@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from "axios";
 
-function AlarmAddModal({ onClose, onSave }) {
+function AlarmAddModal({ onClose }) {
   const [title, setTitle] = useState('');
   const [selectedCoin, setSelectedCoin] = useState('');
   const [selectedType, setSelectedType] = useState('');
@@ -19,6 +19,7 @@ function AlarmAddModal({ onClose, onSave }) {
   const coinInputRef = useRef(null);
   const dropdownRef = useRef(null);
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [calculatedPrice, setCalculatedPrice] = useState(null);
 
   const UpbitDashboard = () => {
     const [coins, setCoins] = useState([]);
@@ -257,15 +258,13 @@ function AlarmAddModal({ onClose, onSave }) {
       }
 
       // 실시간 현재가 기반으로 타겟 가격 계산
-      const currentPrice = selectedCoin.price;
       const percentage = parseFloat(targetPercentage);
-      const targetPrice = Math.round(currentPrice * (1 + percentage / 100));
 
       payload = {
         ...baseData,
         type: "TARGET_PRICE",
         percentage: percentage,
-        target_price: targetPrice,
+        target_price: calculatedPrice,
       };
     } else if (selectedType === "골든 크로스") {
       payload = {
@@ -283,11 +282,9 @@ function AlarmAddModal({ onClose, onSave }) {
       await axios.post("https://localhost:8443/api/v1/alerts", payload, {
         withCredentials: true,
       });
-      alert("알람이 저장되었습니다!");
       onClose();       // 모달 닫기
     } catch (error) {
       console.error("알람 저장 실패:", error);
-      alert("알람 저장에 실패했습니다.");
     }
   };
 
@@ -355,8 +352,16 @@ function AlarmAddModal({ onClose, onSave }) {
                               <li
                                   key={option}
                                   onClick={() => {
-                                    setTargetPercentage(option.replace('%', ''));
+                                    const value = option.replace('%', '');
+                                    setTargetPercentage(value);
                                     setShowPercentDropdown(false);
+
+                                    // 계산된 가격 업데이트
+                                    const numericValue = parseFloat(value);
+                                    if (selectedCoin?.price) {
+                                      const calc = Math.round(selectedCoin.price * (1 + numericValue / 100));
+                                      setCalculatedPrice(calc);
+                                    }
                                   }}
                                   className={`px-3 py-2 hover:bg-blue-100 cursor-pointer text-sm font-medium ${colorClass}`}
                               >
@@ -369,7 +374,10 @@ function AlarmAddModal({ onClose, onSave }) {
                 </div>
 
                 <span className="text-xs text-gray-500">
-                  ({selectedCoin?.price?.toLocaleString() || '0'} 원)
+                  {calculatedPrice
+                      ? `(${calculatedPrice.toLocaleString()} 원)`
+                      : `(${selectedCoin?.price?.toLocaleString() || '0'} 원)`
+                  }
                 </span>
               </div>
             </div>

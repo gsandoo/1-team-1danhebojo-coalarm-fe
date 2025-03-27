@@ -7,11 +7,14 @@ import alertApi from "../../api/alertApi.js";
 import CoinItem from "../../components/alert/CoinItem.jsx";
 import {useDispatch, useSelector} from "react-redux";
 import {closeDeleteModal} from "../../redux/deleteModalSlice.js";
+import {openModal, closeModal} from "../../redux/createAlertModalSlice.js";
 import AlarmDeleteModal from "../../components/alert/AlarmDeleteModal.jsx";
+import AlarmAddModal from "../../components/alert/AlarmAddModal.jsx";
 
 const AlertPage = () => {
     // 삭제 모달 전역 상태
-    const { isOpen, alertId } = useSelector((state) => state.deleteModal);
+    const { isOpen: isDeleteOpen, alertId } = useSelector((state) => state.deleteModal);
+    const { isOpen: isCreateOpen } = useSelector((state) => state.createAlertModal);
     const dispatch = useDispatch();
 
     const handleDeleteConfirm = async () => {
@@ -146,7 +149,9 @@ const AlertPage = () => {
             <div className="flex-1 h-full overflow-y-auto px-[220px] py-[60px]">
                 {/*알람 등록 버튼*/}
                 <div className="flex justify-end mb-8">
-                    <button className="bg-blue-600 text-white px-6 py-2 rounded-[100px] bg-[#1631FE] shadow-[0px_4px_8px_0px_rgba(0,0,0,0.10)] w-[212px] h-[48px]">
+                    <button
+                        onClick={() => dispatch(openModal())}
+                        className="bg-blue-600 text-white px-6 py-2 rounded-[100px] bg-[#1631FE] shadow-[0px_4px_8px_0px_rgba(0,0,0,0.10)] w-[212px] h-[48px]">
                         알림 설정하기
                     </button>
                 </div>
@@ -248,10 +253,16 @@ const AlertPage = () => {
                 </div>
 
                 {/* 알람 삭제 확인 모달 - 사이드바를 고려한 위치 */}
-                {isOpen && (
+                {isDeleteOpen && (
                     <AlarmDeleteModal
                         onClose={() => dispatch(closeDeleteModal())}
                         onConfirm={handleDeleteConfirm}
+                    />
+                )}
+
+                {isCreateOpen && (
+                    <AlarmAddModal
+                        onClose={() => dispatch(closeModal())}
                     />
                 )}
             </div>
