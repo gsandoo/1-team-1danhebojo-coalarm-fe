@@ -3,7 +3,7 @@ name: Deploy Coalarm
 on:
   push:
     branches:
-      - main  
+      - develop  
     paths-ignore:
       - 'README.md'
       - '.gitignore'
