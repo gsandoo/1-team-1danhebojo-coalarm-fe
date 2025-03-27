@@ -292,15 +292,25 @@ function AlarmAddModal({ onClose, onAddAlert }) {
     try {
       const response = await axios.post("https://localhost:8443/api/v1/alerts", payload, {
         withCredentials: true,
+        validateStatus: () => true,
       });
 
-      const createdAlert = response.data.data;
-      if (onAddAlert) {
-        onAddAlert(createdAlert);
+      if (response.status === 200) {
+        const createdAlert = response.data.data;
+        if (onAddAlert) {
+          onAddAlert(createdAlert);
+        }
+        onClose(); // 모달 닫기
+      } else if (response.status === 409) {
+        alert(response.data.data?.error?.message || "이미 등록된 알람입니다.");
+      } else if (response.status === 500) {
+        alert("서버 오류가 발생했어요. 잠시 후 다시 시도해주세요.");
+      } else {
+        alert(`알 수 없는 오류 발생 (status: ${response.status})`);
       }
-      onClose();       // 모달 닫기
     } catch (error) {
-      console.error("알람 저장 실패:", error);
+      console.error("요청 실패 (Axios 자체 문제 등):", error);
+      alert("요청 중 문제가 발생했어요. 네트워크 상태를 확인해주세요.");
     }
   };
 
