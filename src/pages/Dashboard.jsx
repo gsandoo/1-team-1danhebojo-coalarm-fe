@@ -26,9 +26,6 @@ function Dashboard() {
   });
   const [rsiData, setRsiData] = useState(45.7);
   const [shortLongData, setShortLongData] = useState({ longRatio: 52.39, shortRatio: 47.61 });
-  const [kimchiPremiumData, setKimchiPremiumData] = useState([]);
-  const [recentTransactions, setRecentTransactions] = useState([]);
-  const [whaleTransactions, setWhaleTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -83,30 +80,20 @@ function Dashboard() {
               shortRatio: Number(dashboardData.ratio.shortRatio)
             });
           }
+          
         }
-        
-        // 김치 프리미엄 데이터, 거래 내역 등은 목업 데이터 사용
-        setKimchiPremiumData(mockKimchiPremiumData);
-        setRecentTransactions(mockTransactions);
-        setWhaleTransactions(mockWhaleTransactions);
-        
       } catch (err) {
         console.error("데이터 불러오기 실패:", err);
         setError("데이터를 불러오는 중 오류가 발생했습니다.");
-        
-        // 에러 발생 시 예시 데이터 사용
-        setKimchiPremiumData(mockKimchiPremiumData);
-        setRecentTransactions(mockTransactions);
-        setWhaleTransactions(mockWhaleTransactions);
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchData();
-    
+
     // 15초마다 데이터 업데이트
-    const intervalId = setInterval(fetchData, 15000);
+    // const intervalId = setInterval(fetchData, 15000);
     
     // 최근 검색 기록 불러오기
     const savedSearches = localStorage.getItem('recentCoinSearches');
@@ -117,8 +104,7 @@ function Dashboard() {
         console.error('Failed to parse recent searches:', e);
       }
     }
-    
-    return () => clearInterval(intervalId);
+    // return () => clearInterval(intervalId);
   }, [coinId]); // coinId가 변경될 때마다 데이터 재요청
 
   useEffect(() => {
@@ -130,33 +116,6 @@ function Dashboard() {
         console.error("공포탐욕 API 실패", err);
       });
   }, []);
-  
-  
-  // 김치 프리미엄 예시 데이터
-  const mockKimchiPremiumData = {
-    contents: [
-      { premiumId: 1, coin: 'BTC', domesticPrice: 128448000, globalPrice: 86086.82, kimchiPremium: 2.84, dailyChange: 1.2 },
-      { premiumId: 2, coin: 'ALGO', domesticPrice: 377.00, globalPrice: 0.29, kimchiPremium: 3.12, dailyChange: 0.5 },
-      { premiumId: 3, coin: 'STMX', domesticPrice: 5.82, globalPrice: 0.00, kimchiPremium: -11.27, dailyChange: -2.3 }
-    ]
-  };
-  
-  // 예시 데이터 (API 연결 전 테스트용)
-  const mockTransactions = [
-    { id: 1, coin: 'BTC', price: 76894000, amount: 0.258, type: 'buy', time: '09:45:22' },
-    { id: 2, coin: 'BTC', price: 76815000, amount: 0.375, type: 'sell', time: '09:45:18' },
-    { id: 3, coin: 'BTC', price: 76822000, amount: 0.124, type: 'buy', time: '09:45:15' },
-    { id: 4, coin: 'BTC', price: 76789000, amount: 0.553, type: 'buy', time: '09:45:08' },
-    { id: 5, coin: 'BTC', price: 76724000, amount: 0.891, type: 'sell', time: '09:44:56' }
-  ];
-  
-  const mockWhaleTransactions = [
-    { id: 1, coin: 'BTC', price: 76894000, amount: 12.58, type: 'buy', time: '09:45:22' },
-    { id: 2, coin: 'BTC', price: 76815000, amount: 18.75, type: 'sell', time: '09:45:10' },
-    { id: 3, coin: 'BTC', price: 76822000, amount: 15.24, type: 'buy', time: '09:44:35' },
-    { id: 4, coin: 'BTC', price: 76789000, amount: 10.53, type: 'sell', time: '09:44:12' },
-    { id: 5, coin: 'BTC', price: 76724000, amount: 14.91, type: 'buy', time: '09:43:45' }
-  ];
 
   // 통화 포맷 함수
   const formatCurrency = (value) => {
@@ -422,24 +381,28 @@ function Dashboard() {
               </div>
             </div>
             
-            <div className="flex gap-4 mb-5">
+            {/* 김치 프리미엄, 실시간 체결 내역, 고래 체결 내역 섹션 */}
+            <div className="grid grid-cols-3 gap-4 mb-5">
               {/* 김치 프리미엄 */}
-              <div className="flex-1">
+              <div>
                 <KimchiPremium />
               </div>
-              
-              {/* 실시간 거래 내역 */}
-              <div className="flex-grow grid grid-cols-2 gap-4">
-                {/* 실시간 체결 내역 */}
+
+              {/* 실시간 체결 내역 */}
+              <div>
                 <TransactionList 
-                  title="실시간 체결 내역" 
-                  transactions={recentTransactions} 
+                  title={`${coinData.name} 실시간 체결 내역`}
+                  symbol={coinData.symbol} 
+                  isWhale={false}
                 />
-                
-                {/* 실시간 고래 체결 내역 */}
+              </div>
+              
+              {/* 실시간 고래 체결 내역 */}
+              <div>
                 <TransactionList 
-                  title="실시간 고래 체결 내역" 
-                  transactions={whaleTransactions} 
+                  title={`${coinData.name} 고래 체결 내역`}
+                  symbol={coinData.symbol} 
+                  isWhale={true}
                 />
               </div>
             </div>
