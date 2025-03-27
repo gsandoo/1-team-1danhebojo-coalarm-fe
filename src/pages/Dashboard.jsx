@@ -46,14 +46,9 @@ function Dashboard() {
       try {
         // 통합 대시보드 API 요청
         const dashboardResponse = await dashboardApi.getDashboardIndex(coinId);
-        console.log("대시보드 응답", dashboardResponse)
-        console.log(dashboardResponse.status)
-        console.log(dashboardResponse.data)
         // 요청 성공 및 데이터 확인
         if (dashboardResponse.status === "success" && dashboardResponse.data) {
           const dashboardData = dashboardResponse.data;
-
-          console.log(dashboardData)
           
           // 코인 정보 설정
           if (dashboardData.coin) {
@@ -67,7 +62,6 @@ function Dashboard() {
           // RSI 데이터 설정
           if (dashboardData.rsi && dashboardData.rsi.value !== undefined) {
             setRsiData(Number(dashboardData.rsi.value));
-            console.log(rsiData)
           }
           
           // MACD 데이터 설정
@@ -430,8 +424,8 @@ function Dashboard() {
             
             <div className="flex gap-4 mb-5">
               {/* 김치 프리미엄 */}
-              <div className="w-80">
-                <KimchiPremium markets={kimchiPremiumData} />
+              <div className="flex-1">
+                <KimchiPremium />
               </div>
               
               {/* 실시간 거래 내역 */}
