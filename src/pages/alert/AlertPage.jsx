@@ -17,6 +17,12 @@ const AlertPage = () => {
     const { isOpen: isCreateOpen } = useSelector((state) => state.createAlertModal);
     const dispatch = useDispatch();
 
+    // 추가: 알람 등록 시 새 알람 추가
+    const handleAlertAdd = (newAlert) => {
+        setAlerts((prev) => [newAlert, ...prev]); // 최신순으로 추가
+        setTotalCount((prev) => prev + 1);
+    };
+
     const handleDeleteConfirm = async () => {
         try {
             await alertApi.deleteAlert(alertId);
@@ -262,6 +268,7 @@ const AlertPage = () => {
 
                 {isCreateOpen && (
                     <AlarmAddModal
+                        onAddAlert={handleAlertAdd}
                         onClose={() => dispatch(closeModal())}
                     />
                 )}
