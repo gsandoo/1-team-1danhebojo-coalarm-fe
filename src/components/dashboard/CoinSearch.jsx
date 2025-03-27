@@ -3,11 +3,26 @@ import dashboardApi from '../../api/dashboardApi';
 
 const CoinSearch = ({ onSelectCoin }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchResult, setSearchResult] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [recentSearches, setRecentSearches] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
   const firstRender = useRef(true);
+  const searchRef = useRef(null);
+
+  // 검색 외부 클릭 감지
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [searchRef]);
 
   // Function to handle coin search
   const handleCoinSearch = async (term) => {
@@ -20,24 +35,36 @@ const CoinSearch = ({ onSelectCoin }) => {
       const response = await dashboardApi.searchCoins(term);
       
       if (response && response.status === "success" && response.data) {
-        const coinData = response.data;
-        setSearchResult(coinData);
-        
-        // 최근 검색에 추가
-        updateRecentSearches(coinData);
-        
-        // 부모 컴포넌트에 선택된 코인 정보 전달
-        if (onSelectCoin) {
-          onSelectCoin(coinData);
-        }
+        // 여러 결과를 배열로 처리
+        const coinsData = Array.isArray(response.data) ? response.data : [response.data];
+        setSearchResults(coinsData);
+        setShowDropdown(true); // 검색 결과 드롭다운 표시
       } else {
-        setError("검색 결과가 없습니다.");
+        setError("코인을 찾을 수 없습니다.");
+        setShowDropdown(false);
       }
     } catch (err) {
-      setError("코인 검색에 실패했습니다");
+      setError("코인을 찾을 수 없습니다.");
+      setShowDropdown(false);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // 검색 결과에서 코인 선택 핸들러
+  const handleResultSelect = (coin) => {
+    if (!coin) return;
+    
+    setSearchTerm(coin.name);
+    setShowDropdown(false);
+    
+    // 부모 컴포넌트에 선택된 코인 정보 전달 (차트 업데이트)
+    if (onSelectCoin) {
+      onSelectCoin(coin);
+    }
+    
+    // 최근 검색에 추가
+    updateRecentSearches(coin);
   };
 
   // 최근 검색 기록 업데이트
@@ -60,9 +87,8 @@ const CoinSearch = ({ onSelectCoin }) => {
     if (!coin) return; // 유효한 데이터인지 확인
     
     setSearchTerm(coin.name);
-    setSearchResult(coin);
     
-    // 부모 컴포넌트에 선택된 코인 정보 전달
+    // 부모 컴포넌트에 선택된 코인 정보 전달 (차트 업데이트)
     if (onSelectCoin) {
       onSelectCoin(coin);
     }
@@ -103,18 +129,30 @@ const CoinSearch = ({ onSelectCoin }) => {
   `;
 
   return (
-    <div className="bg-blue-900 rounded-lg p-4 h-[464px]">
+    <div className="bg-blue-900 rounded-lg p-4 h-[464px] flex flex-col">
       <style>{scrollbarStyles}</style>
-      <div className="relative mb-2">
+      <div className="relative mb-2" ref={searchRef}>
         <input
           type="text"
           placeholder="코인명 또는 코드"
           className="w-full py-2 px-4 pr-10 rounded-md bg-blue-950 text-white border border-blue-800 focus:outline-none focus:border-blue-700"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            if (e.target.value.length >= 2) { // 2글자 이상일 때 자동 검색
+              handleCoinSearch(e.target.value);
+            } else {
+              setShowDropdown(false);
+            }
+          }}
           onKeyPress={(e) => {
             if (e.key === 'Enter') {
               handleCoinSearch(e.target.value);
+            }
+          }}
+          onClick={() => {
+            if (searchResults.length > 0) {
+              setShowDropdown(true);
             }
           }}
         />
@@ -131,50 +169,56 @@ const CoinSearch = ({ onSelectCoin }) => {
             clipRule="evenodd"
           />
         </svg>
+        
+        {/* 검색 결과 드롭다운 */}
+        {showDropdown && searchResults.length > 0 && !error && (
+          <div className="absolute z-10 mt-1 w-full bg-[#192339] rounded-md shadow-lg max-h-60 overflow-y-auto custom-scrollbar border border-blue-600">
+            {searchResults.map((result) => (
+              <div 
+                key={result.coinId} 
+                className="p-3 hover:bg-blue-700 cursor-pointer border-b border-blue-700 last:border-0"
+                onClick={() => handleResultSelect(result)}
+              >
+                <div className="flex items-center">
+                  <div className="mr-2 w-6 h-6 flex items-center justify-center rounded-full overflow-hidden">
+                    <img 
+                      src={`https://static.upbit.com/logos/${result.symbol}.png`} 
+                      alt={`${result.symbol} 로고`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.parentNode.innerHTML = `<div class="bg-yellow-400 w-full h-full flex items-center justify-center"><span class="text-black font-bold text-xs">${result.symbol.charAt(0)}</span></div>`;
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <h4 className="text-white font-medium">{result.name}</h4>
+                    <p className="text-gray-400 text-xs">{result.symbol}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       
-      {/* Search Results */}
+      {/* Loading State */}
       {isLoading && (
         <div className="mt-4 bg-blue-950 rounded-md p-3 text-white text-center">
           <p>검색 중...</p>
         </div>
       )}
       
-      {error && (
-        <div className="mt-4 bg-red-900 rounded-md p-3 text-white text-center">
+      {error && !isLoading && (
+        <div className="mt-4 bg-blue-950 rounded-md p-3 text-gray-400 text-center">
           <p>{error}</p>
-        </div>
-      )}
-      
-      {searchResult && !isLoading && !error && (
-        <div 
-          className="mt-4 bg-blue-950 rounded-md p-3 flex items-center justify-between cursor-pointer hover:bg-blue-800 transition"
-          onClick={() => handleRecentCoinSelect(searchResult)}
-        >
-          <div className="flex items-center">
-            <div className="mr-2 w-6 h-6 flex items-center justify-center rounded-full overflow-hidden">
-              <img 
-                src={`https://static.upbit.com/logos/${searchResult.symbol}.png`} 
-                alt={`${searchResult.symbol} 로고`}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.parentNode.innerHTML = `<div class="bg-yellow-400 w-full h-full flex items-center justify-center"><span class="text-black font-bold text-xs">${searchResult.symbol.charAt(0)}</span></div>`;
-                }}
-              />
-            </div>
-            <div>
-              <h4 className="text-white font-medium">{searchResult.name}</h4>
-              <p className="text-gray-400 text-xs">{searchResult.symbol}/KRW</p>
-            </div>
-          </div>
         </div>
       )}
       
       {/* Recent Searches */}
       <div className="mt-4 flex-grow flex flex-col">
         <h3 className="text-white text-sm font-medium mb-2">최근 검색 기록</h3>
-        <div className="overflow-y-auto overflow-x-hidden flex-grow custom-scrollbar max-h-[250px]">
+        <div className="overflow-y-auto overflow-x-hidden flex-grow custom-scrollbar" style={{ maxHeight: '320px' }}>
           {recentSearches.length > 0 ? (
             <div className="space-y-2">
               {recentSearches
@@ -199,10 +243,8 @@ const CoinSearch = ({ onSelectCoin }) => {
                       </div>
                       <div>
                         <h4 className="text-white font-medium">{coin.name}</h4>
-                        <p className="text-gray-400 text-xs">{coin.symbol}/KRW</p>
+                        <p className="text-gray-400 text-xs">{coin.symbol}</p>
                       </div>
-                    </div>
-                    <div className="text-white text-lg font-bold">
                     </div>
                   </div>
                 ))}
