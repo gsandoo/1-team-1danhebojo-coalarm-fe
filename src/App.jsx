@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import Discord from './pages/Discord';
 import Dashboard from './pages/Dashboard';
@@ -29,7 +29,7 @@ const AppContent = () => {
           <Route path="/discord" element={<Discord />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/mypage" element={<Mypage />} />
-
+          
           {/* 알람 라우트*/}
           <Route path="/alert" element={<AlertPage />} />
 
@@ -40,6 +40,9 @@ const AppContent = () => {
           <Route path="/guide/long-short" element={<LongShortGuide />} />
           <Route path="/guide/kimchi-premium" element={<KimchiPremiumGuide />} />
           <Route path="/guide/whale-transactions" element={<WhaleTransactionsGuide />} />
+          
+          {/* No matching routes - Redirect to "/" */}
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
     </>
