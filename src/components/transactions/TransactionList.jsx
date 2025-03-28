@@ -1,13 +1,14 @@
 // src/components/transactions/TransactionList.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Tooltip from '../common/Tooltip';
+import { subscribe } from '../../utils/upbitWebSocket';
 
 function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
   const [transactions, setTransactions] = useState([]);
   const [showTooltip, setShowTooltip] = useState(false);
-  const ws = useRef(null);
   const scrollRef = useRef(null);
+  const componentId = useId();
   
   // 숫자를 한국어 단위로 포맷팅하는 함수 (억, 천만, 백만 등)
   const formatKoreanNumber = (num) => {
@@ -37,51 +38,14 @@ function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
     // symbol이 바뀌면 기존 거래 내역을 초기화
     setTransactions([]);
 
-    // 고래 거래인 경우 약간의 지연 후 웹소켓 연결
-    const timer = setTimeout(() => {
-      connectWebSocket();
-    }, isWhale ? 1000 : 0); // 고래 거래는 1초 지연, 일반 거래는 즉시 연결
-    
-    
-    // 컴포넌트 언마운트 시 웹소켓 연결 해제 및 타이머 정리
-    return () => {
-      clearTimeout(timer);
-      if (ws.current) {
-        ws.current.close();
-      }
-    };
-  }, [symbol]); // symbol이 변경될 때마다 실행
-
-  const connectWebSocket = () => {
-    // 기존 웹소켓 연결 해제
-    if (ws.current) {
-      ws.current.close();
-    }
-    
-    // 새 웹소켓 연결
-    ws.current = new WebSocket('wss://api.upbit.com/websocket/v1');
-    
-    ws.current.onopen = () => {
-      if (ws.current.readyState === WebSocket.OPEN) {
-        // 체결 내역을 구독하는 메시지
-        const subscribeMsg = [
-          { ticket: `trade_${symbol}_${isWhale ? 'whale' : 'normal'}` },
-          { type: 'trade', codes: [`KRW-${symbol}`] },
-          { format: 'SIMPLE' }
-        ];
-        ws.current.send(JSON.stringify(subscribeMsg));
-      }
-    };
-    
-    ws.current.onmessage = async (event) => {
-      try {
-        const buffer = await event.data.arrayBuffer();
-        const text = new TextDecoder('utf-8').decode(buffer);
-        const data = JSON.parse(text);
-        
+    // 웹소켓 구독 설정
+    const unsubscribeFunc = subscribe(
+      `${componentId}_${isWhale ? 'whale' : 'normal'}`, 
+      symbol,
+      (data) => {
         // 데이터 형식 변환
         const transaction = {
-          id: Date.now() + Math.random(),
+          id: `${Date.now()}_${symbol}_${isWhale ? 'whale' : 'normal'}_${Math.random().toString(36).substring(2, 9)}`,
           coin: symbol,
           price: data.tp, // trade_price (매수/매도 가격)
           amount: data.tv, // trade_volume
@@ -89,28 +53,21 @@ function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
           time: new Date(data.tms).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) // trade_timestamp
         };
         
-        // 고래 거래 필터링 (1,000만원 이상의 거래)
-        const tradeAmount = data.tp * data.tv; // 가격 * 거래량 = 거래 금액
-        
-        if ((isWhale && tradeAmount >= 10000000) || (!isWhale)) {
-          setTransactions(prev => {
-            const newTransactions = [transaction, ...prev].slice(0, 50); // 더 많은 거래 내역 유지 (스크롤 가능)
-            return newTransactions;
-          });
-        }
-      } catch (error) {
-        console.error('WebSocket message parsing error:', error);
+        setTransactions(prev => {
+          const newTransactions = [transaction, ...prev].slice(0, 50);
+          return newTransactions;
+        });
+      },
+      isWhale // 고래 거래 여부
+    );
+    
+    // 컴포넌트 언마운트 시 구독 해제
+    return () => {
+      if (unsubscribeFunc) {
+        unsubscribeFunc();
       }
     };
-    
-    ws.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-    
-    ws.current.onclose = () => {
-      console.log('WebSocket connection closed');
-    }
-  };
+  }, [symbol, isWhale, componentId]);
   
   // 스크롤바 스타일
   const scrollbarStyles = `
