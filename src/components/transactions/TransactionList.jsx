@@ -36,18 +36,22 @@ function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
   useEffect(() => {
     // symbol이 바뀌면 기존 거래 내역을 초기화
     setTransactions([]);
+
+    // 고래 거래인 경우 약간의 지연 후 웹소켓 연결
+    const timer = setTimeout(() => {
+      connectWebSocket();
+    }, isWhale ? 1000 : 0); // 고래 거래는 1초 지연, 일반 거래는 즉시 연결
     
-    // 웹소켓 연결
-    connectWebSocket();
     
-    // 컴포넌트 언마운트 시 웹소켓 연결 해제
+    // 컴포넌트 언마운트 시 웹소켓 연결 해제 및 타이머 정리
     return () => {
+      clearTimeout(timer);
       if (ws.current) {
         ws.current.close();
       }
     };
   }, [symbol]); // symbol이 변경될 때마다 실행
-  
+
   const connectWebSocket = () => {
     // 기존 웹소켓 연결 해제
     if (ws.current) {
@@ -105,7 +109,7 @@ function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
     
     ws.current.onclose = () => {
       console.log('WebSocket connection closed');
-    };
+    }
   };
   
   // 스크롤바 스타일
