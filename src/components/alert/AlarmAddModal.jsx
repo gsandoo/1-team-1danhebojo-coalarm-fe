@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useId } from 'react';
 import axios from "axios";
+import { subscribeTicker } from '../../utils/upbitWebSocket';
 
 function AlarmAddModal({ onClose, onAddAlert }) {
   const [title, setTitle] = useState('');
@@ -20,181 +21,25 @@ function AlarmAddModal({ onClose, onAddAlert }) {
   const dropdownRef = useRef(null);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [calculatedPrice, setCalculatedPrice] = useState(null);
-
-  const UpbitDashboard = () => {
-    const [coins, setCoins] = useState([]);
-    const marketInfoMap = useRef({});
-    const ws = useRef(null);
-
-    useEffect(() => {
-      fetch('https://api.upbit.com/v1/market/all?isDetails=false')
-          .then((res) => res.json())
-          .then((data) => {
-            const krwMarkets = data.filter((m) => m.market.startsWith('KRW-'));
-            const map = {};
-            krwMarkets.forEach((m) => {
-              map[m.market] = m;
-            });
-            marketInfoMap.current = map;
-
-            connectWebSocket(Object.keys(map));
-          });
-    }, []);
-
-    const connectWebSocket = (markets) => {
-      ws.current = new WebSocket('wss://api.upbit.com/websocket/v1');
-
-      ws.current.onopen = () => {
-        if (ws.current.readyState === WebSocket.OPEN) {
-          ws.current.send(
-              JSON.stringify([
-                { ticket: 'coin-list' },
-                { type: 'ticker', codes: markets },
-                { format: 'SIMPLE' },
-              ])
-          );
-        } else {
-          console.warn('WebSocket still connecting...');
-        }
-      };
-
-      ws.current.onmessage = (e) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const text = reader.result;
-          const data = JSON.parse(text);
-          const info = marketInfoMap.current[data.code];
-          if (!info) return;
-
-          const symbol = data.code.split('-')[1];
-
-          setCoins((prev) => {
-            const filtered = prev.filter((c) => c.coinId !== data.code);
-            return [
-              ...filtered,
-              {
-                coinId: data.code,
-                name: info.korean_name,
-                symbol: symbol,
-                price: data.trade_price,
-                volume: Math.round(data.acc_trade_price_24h / 1_000_000), // 백만 단위
-              },
-            ];
-          });
-        };
-        reader.readAsText(e.data);
-      };
-
-      ws.current.onerror = (e) => {
-        console.error('WebSocket error:', e);
-      };
-
-      ws.current.onclose = () => {
-        console.warn('WebSocket closed');
-      };
-    };
-
-    return (
-        <div className="p-4 max-w-3xl mx-auto">
-          <h2 className="text-xl font-bold mb-4">업비트 실시간 코인 정보</h2>
-          <table className="w-full border-collapse text-sm">
-            <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className="p-2">코인명</th>
-              <th className="p-2 text-center">현재가</th>
-              <th className="p-2 text-right">거래대금 (백만)</th>
-            </tr>
-            </thead>
-            <tbody>
-            {coins
-                .sort((a, b) => b.volume - a.volume)
-                .map((coin) => (
-                    <tr key={coin.coinId} className="border-b hover:bg-gray-50 cursor-pointer">
-                      <td className="p-2 w-1/3 truncate">{coin.name} ({coin.symbol})</td>
-                      <td className="p-2 text-center w-1/3">{coin.price?.toLocaleString() || '-'}</td>
-                      <td className="p-2 text-right w-1/3">{coin.volume?.toLocaleString() || '-'} 백만</td>
-                    </tr>
-                ))}
-            </tbody>
-          </table>
-        </div>
-    );
-  };
-
-  const marketInfoMap = useRef({});
-  const ws = useRef(null);
+  const componentId = useId(); // 고유 ID 생성
 
   useEffect(() => {
-    let isMounted = true;
-    const init = async () => {
-      try {
-        const res = await fetch('https://api.upbit.com/v1/market/all?isDetails=false');
-        const markets = await res.json();
-        const krwMarkets = markets.filter(m => m.market.startsWith('KRW-'));
-
-        // 마켓 정보를 map에 저장
-        krwMarkets.forEach(m => {
-          marketInfoMap.current[m.market] = m;
-        });
-
-        // 웹소켓 연결
-        ws.current = new WebSocket('wss://api.upbit.com/websocket/v1');
-
-        ws.current.onopen = () => {
-          if (ws.current.readyState === WebSocket.OPEN) {
-            const subscribeMsg = [
-              { ticket: 'coin-ticker' },
-              { type: 'ticker', codes: krwMarkets.map(m => m.market) }
-            ];
-            ws.current.send(JSON.stringify(subscribeMsg));
-          } else {
-            console.warn('WebSocket still connecting...');
-          }
-        };
-
-        ws.current.onmessage = async (event) => {
-          try {
-            const buffer = await event.data.arrayBuffer(); // <- 여기가 핵심
-            const text = new TextDecoder('utf-8').decode(buffer);
-            const data = JSON.parse(text);
-
-            const info = marketInfoMap.current[data.code];
-            if (!info || !isMounted) return;
-
-            const symbol = data.code.split('-')[1];
-
-            setCoinList((prevList) => {
-              const updated = prevList.filter(c => c.coinId !== data.code);
-              return [
-                ...updated,
-                {
-                  coinId: data.code,
-                  symbol,
-                  name: info.korean_name,
-                  englishName: info.english_name,
-                  price: data.trade_price,
-                  volume: Math.round(data.acc_trade_price_24h / 1_000_000), // 백만 단위
-                },
-              ];
-            });
-          } catch (err) {
-            console.error('WebSocket parsing error:', err);
-          }
-        };
-
-        ws.current.onerror = (e) => {
-          console.error('WebSocket error:', e);
-        };
-
-        ws.current.onclose = () => {
-          console.warn('WebSocket closed');
-        };
-      } catch (err) {
-        console.error('Failed to init market info or WebSocket:', err);
+    // 웹소켓 구독 설정
+    const unsubscribe = subscribeTicker(componentId, (tickerData) => {
+      setCoinList((prevList) => {
+        const updated = prevList.filter(c => c.coinId !== tickerData.coinId);
+        return [...updated, tickerData];
+      });
+      
+      // 선택된 코인이 있고, 그 코인의 정보가 업데이트된 경우
+      if (selectedCoin && selectedCoin.coinId === tickerData.coinId) {
+        setSelectedCoin(prev => ({
+          ...prev,
+          price: tickerData.price,
+          volume: tickerData.volume
+        }));
       }
-    };
-
-    init();
+    });
 
     // 지정가를 이미 선택한 상태에서 코인을 선택할 때 값 변경
     if (selectedType === "지정가" && selectedCoin?.price && targetPercentage.trim() !== '') {
@@ -228,10 +73,11 @@ function AlarmAddModal({ onClose, onAddAlert }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      isMounted = false;
-      ws.current?.close();
+      if (unsubscribe) {
+        unsubscribe();
+      }
     }
-  }, [selectedCoin, targetPercentage, selectedType]);
+  }, [selectedCoin, targetPercentage, selectedType, componentId]);
 
   const handleTitleChange = (e) => {
     const value = e.target.value;
@@ -313,12 +159,6 @@ function AlarmAddModal({ onClose, onAddAlert }) {
       alert("요청 중 문제가 발생했어요. 네트워크 상태를 확인해주세요.");
     }
   };
-
-  //
-  // const handleCoinSelect = (coin) => {
-  //   setSelectedCoin(coin.name);
-  //   setShowDropdown(false);
-  // };
 
   // 색상 클래스 동적 지정
   const getPercentColor = () => {
@@ -470,9 +310,9 @@ function AlarmAddModal({ onClose, onAddAlert }) {
               {selectedCoin ? (
                   <div className="bg-[#E8EAFF] px-4 py-3 rounded-xl flex justify-between items-center">
                     <div className="text-[#2D2D2D] text-sm font-medium flex flex-wrap gap-4">
-        <span>
-          코인명 : <strong>{selectedCoin.name}</strong> <span className="font-bold">{selectedCoin.symbol}</span>
-        </span>
+                      <span>
+                        코인명 : <strong>{selectedCoin.name}</strong> <span className="font-bold">{selectedCoin.symbol}</span>
+                      </span>
                       <span>현재가 : {selectedCoin.price?.toLocaleString() || '-'}</span>
                       <span>거래대금 : {selectedCoin.volume?.toLocaleString() || '-'} 백만</span>
                     </div>
@@ -554,7 +394,6 @@ function AlarmAddModal({ onClose, onAddAlert }) {
                 *현재가는 yyyy.mm.dd, hh:mm:ss 기준의 데이터입니다.
               </p>
             </div>
-
 
             {/* 제목 */}
             <div className="mb-8">
