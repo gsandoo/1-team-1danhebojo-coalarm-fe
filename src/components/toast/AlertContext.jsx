@@ -11,8 +11,8 @@ export const connectSSE = () => {
   const authToken = getCookieValue('Authorization');
   console.log('토큰 존재 여부:', !!authToken);
   
-  // SSE 연결 설정 (타임아웃 연장)
-  const eventSource = new EventSourcePolyfill('https://localhost:8443/api/v1/alerts/subscribe', {
+  // SSE 연결 설정 (타임아웃 연장) 
+  const eventSource = new EventSourcePolyfill(import.meta.env.VITE_BASE_URL+'/alerts/subscribe', {
     headers: {
       Authorization: authToken
     },
