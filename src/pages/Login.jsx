@@ -36,10 +36,14 @@ function Login() {
             {/* 카카오 로그인 버튼 */}
             <a
                 href={import.meta.env.VITE_KAKAO_URL}
-                className="inline-block bg-yellow-300 text-gray-800 font-medium py-4 px-6 rounded-full w-72 text-center hover:bg-yellow-400 transition-colors text-lg"
-            >
-              카카오로 로그인
-            </a>
+                className="inline-block"
+              >
+                <img 
+                  src="/kakao_login_medium_wide.png" 
+                  alt="카카오 로그인" 
+                  className="hover:opacity-90 transition-opacity"
+                />
+              </a>
           </div>
         </div>
 
