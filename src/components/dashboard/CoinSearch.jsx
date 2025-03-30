@@ -99,6 +99,12 @@ const CoinSearch = ({ onSelectCoin }) => {
     }
   }, []);
 
+  // 가격 포맷팅 함수
+  const formatPrice = (price) => {
+    if (!price) return '-';
+    return price.toLocaleString();
+  };
+
   // 스크롤바 스타일
   const scrollbarStyles = `
     .custom-scrollbar::-webkit-scrollbar {
@@ -175,21 +181,26 @@ const CoinSearch = ({ onSelectCoin }) => {
                 className="p-3 hover:bg-blue-700 cursor-pointer border-b border-blue-700 last:border-0"
                 onClick={() => handleResultSelect(result)}
               >
-                <div className="flex items-center">
-                  <div className="mr-2 w-6 h-6 flex items-center justify-center rounded-full overflow-hidden">
-                    <img 
-                      src={`https://static.upbit.com/logos/${result.symbol}.png`} 
-                      alt={`${result.symbol} 로고`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.parentNode.innerHTML = `<div class="bg-yellow-400 w-full h-full flex items-center justify-center"><span class="text-black font-bold text-xs">${result.symbol.charAt(0)}</span></div>`;
-                      }}
-                    />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <div className="mr-2 w-6 h-6 flex items-center justify-center rounded-full overflow-hidden">
+                      <img 
+                        src={`https://static.upbit.com/logos/${result.symbol}.png`} 
+                        alt={`${result.symbol} 로고`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.parentNode.innerHTML = `<div class="bg-yellow-400 w-full h-full flex items-center justify-center"><span class="text-black font-bold text-xs">${result.symbol.charAt(0)}</span></div>`;
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-medium">{result.name}</h4>
+                      <p className="text-gray-400 text-xs">{result.symbol}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-white font-medium">{result.name}</h4>
-                    <p className="text-gray-400 text-xs">{result.symbol}</p>
+                  <div className="text-right">
+                    <p className="text-white font-medium">{formatPrice(result.price)}</p>
                   </div>
                 </div>
               </div>
@@ -232,8 +243,11 @@ const CoinSearch = ({ onSelectCoin }) => {
                       </div>
                       <div>
                         <h4 className="text-white font-medium">{coin.name}</h4>
-                        <p className="text-gray-400 text-xs">{coin.symbol}</p>
+                        <p className="text-gray-400 text-xs">{coin.symbol}/KRW</p>
                       </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-white font-medium">{formatPrice(coin.price)}</p>
                     </div>
                   </div>
                 ))}
