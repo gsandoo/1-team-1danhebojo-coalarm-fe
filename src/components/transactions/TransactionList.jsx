@@ -1,75 +1,67 @@
-// src/components/transactions/TransactionList.jsx
 import React, { useState, useEffect, useRef, useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Tooltip from '../common/Tooltip';
-import { subscribe } from '../../utils/upbitWebSocket';
 
 function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
   const [transactions, setTransactions] = useState([]);
   const [showTooltip, setShowTooltip] = useState(false);
   const scrollRef = useRef(null);
   const componentId = useId();
-  
-  // 숫자를 한국어 단위로 포맷팅하는 함수 (억, 천만, 백만 등)
-  const formatKoreanNumber = (num) => {
-    if (num === 0) return '0원';
-    if (num < 10000) {
-      return num.toLocaleString('ko-KR') + '원';
-    }
-    
-    const units = ['', '만', '억', '조'];
-    let result = '';
-    let unitIndex = 0;
-    let remainder = num;
-    
-    while (remainder > 0) {
-      const digit = remainder % 10000;
-      if (digit > 0) {
-        result = (digit > 0 ? digit.toLocaleString('ko-KR') + units[unitIndex] : '') + result;
-      }
-      unitIndex++;
-      remainder = Math.floor(remainder / 10000);
-    }
-    
-    return result + '원';
-  };
-  
-  useEffect(() => {
-    // symbol이 바뀌면 기존 거래 내역을 초기화
-    setTransactions([]);
 
-    // 웹소켓 구독 설정
-    const unsubscribeFunc = subscribe(
-      `${componentId}_${isWhale ? 'whale' : 'normal'}`, 
-      symbol,
-      (data) => {
-        // 데이터 형식 변환
+  useEffect(() => {
+    setTransactions([]);
+  
+    const url = `${import.meta.env.VITE_BASE_URL}/sse/trade/${symbol}`;
+    const eventSource = new EventSource(url);
+  
+    eventSource.onopen = () => {
+      console.log(`✅ SSE 연결 성공: ${symbol}`);
+    };
+  
+    eventSource.onmessage = (event) => {
+      try {
+        console.log('📥 수신된 원본 데이터:', event.data);
+        const data = JSON.parse(event.data);
+        const tradeAmount = data.trade_price * data.trade_volume;
+    
+        if (isWhale && tradeAmount < 10000000) return;
+    
         const transaction = {
           id: `${Date.now()}_${symbol}_${isWhale ? 'whale' : 'normal'}_${Math.random().toString(36).substring(2, 9)}`,
           coin: symbol,
-          price: data.tp, // trade_price (매수/매도 가격)
-          amount: data.tv, // trade_volume
-          type: data.ab === 'BID' ? 'buy' : 'sell', // ask_bid (BID: 매수, ASK: 매도)
-          time: new Date(data.tms).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) // trade_timestamp
+          price: data.trade_price,
+          amount: data.trade_volume,
+          type: data.ask_bid === 'BID' ? 'buy' : 'sell',
+          time: new Date(data.trade_timestamp).toLocaleTimeString('ko-KR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+          }),
         };
-        
-        setTransactions(prev => {
-          const newTransactions = [transaction, ...prev].slice(0, 50);
-          return newTransactions;
-        });
-      },
-      isWhale // 고래 거래 여부
-    );
     
-    // 컴포넌트 언마운트 시 구독 해제
-    return () => {
-      if (unsubscribeFunc) {
-        unsubscribeFunc();
+        setTransactions((prev) => {
+          const newTx = [transaction, ...prev].slice(0, 50);
+          return newTx;
+        });
+      } catch (err) {
+        console.error('❌ SSE JSON 파싱 실패:', err);
       }
     };
-  }, [symbol, isWhale, componentId]);
+    
   
-  // 스크롤바 스타일
+    eventSource.onerror = (err) => {
+      console.error('❗ SSE 연결 오류:', err);
+      eventSource.close();
+    };
+  
+    return () => {
+      console.log(`🛑 SSE 연결 종료: ${symbol}`);
+      eventSource.close();
+    };
+  }, [symbol, isWhale]);
+  
+
   const scrollbarStyles = `
     .custom-scrollbar::-webkit-scrollbar {
       width: 4px;
@@ -94,13 +86,25 @@ function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
     }
   `;
 
-  // 코인 이름 맵핑 (심볼 -> 한글 이름)
-  const coinNames = {
-    'BTC': '비트코인',
-    'USDC': 'USD 코인',
-    'NEO': '네오',
-    'XRP': '리플',
-    'ETC': '이더리움 클래식'
+  const formatKoreanNumber = (num) => {
+    if (num === 0) return '0원';
+    if (num < 10000) return num.toLocaleString('ko-KR') + '원';
+
+    const units = ['', '만', '억', '조'];
+    let result = '';
+    let unitIndex = 0;
+    let remainder = num;
+
+    while (remainder > 0) {
+      const digit = remainder % 10000;
+      if (digit > 0) {
+        result = digit.toLocaleString('ko-KR') + units[unitIndex] + result;
+      }
+      unitIndex++;
+      remainder = Math.floor(remainder / 10000);
+    }
+
+    return result + '원';
   };
 
   return (
