@@ -4,7 +4,6 @@ import dashboardApi from '../../api/dashboardApi';
 const CoinSearch = ({ onSelectCoin }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [recentSearches, setRecentSearches] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -28,7 +27,6 @@ const CoinSearch = ({ onSelectCoin }) => {
   const handleCoinSearch = async (term) => {
     if (!term.trim()) return;
     
-    setIsLoading(true);
     setError(null);
     
     try {
@@ -46,9 +44,7 @@ const CoinSearch = ({ onSelectCoin }) => {
     } catch (err) {
       setError("코인을 찾을 수 없습니다.");
       setShowDropdown(false);
-    } finally {
-      setIsLoading(false);
-    }
+    } 
   };
 
   // 검색 결과에서 코인 선택 핸들러
@@ -200,20 +196,13 @@ const CoinSearch = ({ onSelectCoin }) => {
             ))}
           </div>
         )}
+
+        {showDropdown && searchTerm.length >= 2 && searchResults.length === 0 && !error && (
+          <div className="absolute z-10 mt-1 w-full bg-blue-950 rounded-md p-3 text-gray-400 text-center border border-blue-600">
+            검색 결과가 없습니다.
+          </div>
+        )}
       </div>
-      
-      {/* Loading State */}
-      {isLoading && (
-        <div className="mt-4 bg-blue-950 rounded-md p-3 text-white text-center">
-          <p>검색 중...</p>
-        </div>
-      )}
-      
-      {error && !isLoading && (
-        <div className="mt-4 bg-blue-950 rounded-md p-3 text-gray-400 text-center">
-          <p>{error}</p>
-        </div>
-      )}
       
       {/* Recent Searches */}
       <div className="mt-4 flex-grow flex flex-col">
