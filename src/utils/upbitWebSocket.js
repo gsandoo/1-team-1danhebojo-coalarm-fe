@@ -201,7 +201,11 @@ const subscribeTickerSymbols = () => {
   ];
   
   try {
-    socketInstance.send(JSON.stringify(subscribeMsg));
+    if (socketInstance.readyState === WebSocket.OPEN) {
+      socketInstance.send(JSON.stringify(subscribeMsg));
+    } else {
+      console.warn("아직 WebSocket이 연결되지 않음 (CONNECTING 상태)"); 
+    }
   } catch (err) {
     console.error("코인 정보 구독 오류:", err);
   }
@@ -280,8 +284,14 @@ export const unsubscribeTicker = (id) => {
 const checkAndCloseConnection = () => {
   const hasTradeSubscribers = Object.keys(subscribers).length > 0;
   const hasTickerSubscribers = Object.keys(tickerSubscribers).length > 0;
-  
+
+  // WebSocket이 연결 중이면 종료하지 않음
   if (!hasTradeSubscribers && !hasTickerSubscribers && socketInstance) {
+    if (socketInstance.readyState === WebSocket.CONNECTING) {
+      console.log('WebSocket이 아직 연결 중이라 종료하지 않음');
+      return;
+    }
+
     socketInstance.close();
     socketInstance = null;
     isConnected = false;

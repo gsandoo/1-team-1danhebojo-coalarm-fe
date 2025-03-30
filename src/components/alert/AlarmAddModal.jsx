@@ -73,11 +73,11 @@ function AlarmAddModal({ onClose, onAddAlert }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
-      if (unsubscribe) {
+      if (typeof unsubscribe === 'function') {
         unsubscribe();
       }
     }
-  }, [selectedCoin, targetPercentage, selectedType, componentId]);
+  }, [componentId]);
 
   const handleTitleChange = (e) => {
     const value = e.target.value;
