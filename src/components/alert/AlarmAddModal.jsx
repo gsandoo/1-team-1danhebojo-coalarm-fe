@@ -149,7 +149,7 @@ function AlarmAddModal({ onClose, onAddAlert }) {
     }
 
     try {
-      const response = await axios.post("https://localhost:8443/api/v1/alerts", payload, {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/v1/alerts`, payload, {
         withCredentials: true,
         validateStatus: () => true,
       });
