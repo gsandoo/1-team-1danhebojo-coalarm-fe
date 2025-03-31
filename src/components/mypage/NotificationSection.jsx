@@ -3,6 +3,25 @@ import { IconVolume, IconPagination } from '../../assets/images/mypage/Icons';
 import AlarmDetailModal from './AlarmDetailModal';
 import userApi from '../../api/userApi';
 
+// 날짜를 한국 시간대로 변환하는 함수
+const convertToKoreanTime = (dateString) => {
+  // UTC 날짜 생성
+  const date = new Date(dateString);
+  
+  // 한국 시간대 (UTC+9)로 조정
+  const koreanTime = new Date(date.getTime() + (9 * 60 * 60 * 1000));
+  
+  // 한국 시간 형식으로 포맷팅
+  return koreanTime.toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true // 24시간제 사용
+  });
+};
+
 function NotificationSection({ currentPage, setCurrentPage }) {
   const [notifications, setNotifications] = useState([]);
   const [selectedNotice, setSelectedNotice] = useState(null);
@@ -11,7 +30,7 @@ function NotificationSection({ currentPage, setCurrentPage }) {
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
 
-  const ITEMS_PER_PAGE = 4;
+  const ITEMS_PER_PAGE = 3;
 
   useEffect(() => {
     const fetchAlertHistory = async () => {
@@ -34,13 +53,8 @@ function NotificationSection({ currentPage, setCurrentPage }) {
             // 실제 번호 대신 페이지 내에서 역순으로 번호 부여 (가장 최근 알람이 1번)
             displayNumber: totalElements - offset - index,
             content: alert.alert?.title || `알림 ${alert.alertHistoryId}`,
-            date: new Date(alert.registeredDate).toLocaleString('ko-KR', {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit'
-            })
+            // 한국 시간대로 변환
+            date: convertToKoreanTime(alert.registeredDate)
           })));
           
           // 총 페이지 수 계산
@@ -84,6 +98,11 @@ function NotificationSection({ currentPage, setCurrentPage }) {
       setLoading(true);
       const response = await userApi.getAlertDetail(notice.id);
       console.log('알람 상세 조회 결과:', response);
+      
+      // 상세 조회 결과에 있는 날짜도 한국 시간으로 변환
+      if (response && response.data && response.data.registeredDate) {
+        response.data.formattedDate = convertToKoreanTime(response.data.registeredDate);
+      }
       
       setSelectedNotice(response);
       setShowModal(true);
@@ -135,25 +154,27 @@ function NotificationSection({ currentPage, setCurrentPage }) {
               <div className="col-span-2 text-center text-gray-200">일시</div>
             </div>
 
-            {loading ? (
-              <div className="text-center py-10 text-white">로딩 중...</div>
-            ) : error ? (
-              <div className="text-center py-10 text-red-400">{error}</div>
-            ) : notifications.length === 0 ? (
-              <div className="text-center py-10 text-gray-400">알람 내역이 없습니다.</div>
-            ) : (
-              notifications.map(notice => (
-                <div 
-                  key={notice.id} 
-                  className="grid grid-cols-12 py-2.5 px-4 border-b border-[#2e3a80] text-xs hover:bg-[#1a2272]/30 cursor-pointer"
-                  onClick={() => handleNoticeClick(notice)}
-                >
-                  <div className="col-span-1 text-center text-white">{notice.displayNumber}</div>
-                  <div className="col-span-9 text-white">{notice.content}</div>
-                  <div className="col-span-2 text-center text-white">{notice.date}</div>
-                </div>
-              ))
-            )}
+            <div className="max-h-[120px] overflow-y-auto">
+              {loading ? (
+                <div className="text-center py-10 text-white">로딩 중...</div>
+              ) : error ? (
+                <div className="text-center py-10 text-red-400">{error}</div>
+              ) : notifications.length === 0 ? (
+                <div className="text-center py-10 text-gray-400">알람 내역이 없습니다.</div>
+              ) : (
+                notifications.map(notice => (
+                  <div 
+                    key={notice.id} 
+                    className="grid grid-cols-12 py-2.5 px-4 border-b border-[#2e3a80] text-xs hover:bg-[#1a2272]/30 cursor-pointer"
+                    onClick={() => handleNoticeClick(notice)}
+                  >
+                    <div className="col-span-1 text-center text-white">{notice.displayNumber}</div>
+                    <div className="col-span-9 text-white">{notice.content}</div>
+                    <div className="col-span-2 text-center text-white">{notice.date}</div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
         
