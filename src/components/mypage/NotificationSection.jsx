@@ -11,7 +11,7 @@ function NotificationSection({ currentPage, setCurrentPage }) {
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
 
-  const ITEMS_PER_PAGE = 5;
+  const ITEMS_PER_PAGE = 4;
 
   useEffect(() => {
     const fetchAlertHistory = async () => {
@@ -28,8 +28,11 @@ function NotificationSection({ currentPage, setCurrentPage }) {
         const totalElements = response.data?.totalElements || 0;
         
         if (alerts.length > 0) {
-          setNotifications(alerts.map(alert => ({
+          // 알림 데이터 변환 및 설정
+          setNotifications(alerts.map((alert, index) => ({
             id: alert.alertHistoryId,
+            // 실제 번호 대신 페이지 내에서 역순으로 번호 부여 (가장 최근 알람이 1번)
+            displayNumber: totalElements - offset - index,
             content: alert.alert?.title || `알림 ${alert.alertHistoryId}`,
             date: new Date(alert.registeredDate).toLocaleString('ko-KR', {
               year: 'numeric',
@@ -145,7 +148,7 @@ function NotificationSection({ currentPage, setCurrentPage }) {
                   className="grid grid-cols-12 py-2.5 px-4 border-b border-[#2e3a80] text-xs hover:bg-[#1a2272]/30 cursor-pointer"
                   onClick={() => handleNoticeClick(notice)}
                 >
-                  <div className="col-span-1 text-center text-white">{notice.id}</div>
+                  <div className="col-span-1 text-center text-white">{notice.displayNumber}</div>
                   <div className="col-span-9 text-white">{notice.content}</div>
                   <div className="col-span-2 text-center text-white">{notice.date}</div>
                 </div>

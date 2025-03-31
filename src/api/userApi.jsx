@@ -57,7 +57,11 @@ const userApi = {
   // 알람 히스토리 목록 조회
   getAlertHistory: (offset = 0, limit = 5) => {
     return axiosInstance.get('/alerts/history', {
-      params: { offset, limit }
+      params: { 
+        offset, 
+        limit,
+        sort: 'registeredDate,desc'
+      }
     });
   },
 
