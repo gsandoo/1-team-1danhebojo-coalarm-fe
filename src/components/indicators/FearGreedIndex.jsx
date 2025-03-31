@@ -6,6 +6,7 @@ function FearGreedIndex({ value }) {
   const [showTooltip, setShowTooltip] = useState(false);
   
   const getStatusText = () => {
+    if (value === null) return '로딩 중';
     if (value <= 24) return '극단적 공포';
     if (value <= 39) return '공포';
     if (value <= 60) return '중립';
@@ -13,6 +14,7 @@ function FearGreedIndex({ value }) {
     return '극단적 탐욕';
   };
   const getStatusColorStyle = () => {
+    if (value === null) return { color: '#FFFFFF' };
     if (value <= 24) return { color: '#EF4444' }; // 매우 공포
     if (value <= 39) return { color: '#DC7E7B' }; // 공포
     if (value <= 60) return { color: '#FFFFFF' }; // 중립
@@ -48,19 +50,29 @@ function FearGreedIndex({ value }) {
       </div>
 
       {/* 상태 텍스트 & 값 */}
-      <div className="flex flex-col items-center justify-center mb-4">
-      <div className="text-center font-bold text-2xl" style={getStatusColorStyle()}>{getStatusText()}</div>
-        <div className="text-white text-5xl font-bold text-center mt-1" style={getStatusColorStyle()}>{value}</div>
-      </div>
-
-      {/* 상태 바 */}
-      <div className="mt-3">
-        <div className="w-full h-3 bg-gray-600 rounded-full overflow-hidden">
-          <div className="h-full" style={{ width: `${value}%`, backgroundColor: '#B7BFFF' }}></div>
+      {value === null ? (
+        <div className="flex items-center justify-center h-40">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* 상태 텍스트 & 값 */}
+          <div className="flex flex-col items-center justify-center mb-4">
+            <div className="text-center font-bold text-2xl" style={getStatusColorStyle()}>{getStatusText()}</div>
+            <div className="text-white text-5xl font-bold text-center mt-1" style={getStatusColorStyle()}>{value}</div>
+          </div>
+
+          {/* 상태 바 */}
+          <div className="mt-3">
+            <div className="w-full h-3 bg-gray-600 rounded-full overflow-hidden">
+              <div className="h-full" style={{ width: `${value}%`, backgroundColor: '#B7BFFF' }}></div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
+
 
 export default FearGreedIndex;
