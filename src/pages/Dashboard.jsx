@@ -18,7 +18,7 @@ function Dashboard() {
   const { coinId = 1 } = useParams();
 
   const [coinData, setCoinData] = useState({ symbol: 'BTC', name: '비트코인' });
-  const [fearGreedIndex, setFearGreedIndex] = useState(55.0);
+  const [fearGreedIndex, setFearGreedIndex] = useState(null);
   const [macdData, setMacdData] = useState({ 
     macd: -987.29, 
     signal: -687.23, 
