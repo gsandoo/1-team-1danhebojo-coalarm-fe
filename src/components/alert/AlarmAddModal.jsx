@@ -21,6 +21,7 @@ function AlarmAddModal({ onClose, onAddAlert }) {
   const dropdownRef = useRef(null);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [calculatedPrice, setCalculatedPrice] = useState(null);
+  const [isCustomInput, setIsCustomInput] = useState(null);
 
   const formatDateTime = (isoString) => {
     if (!isoString) return '';
@@ -213,18 +214,59 @@ function AlarmAddModal({ onClose, onAddAlert }) {
                 <div className="relative w-[68px] h-[28px]">
                   <input
                       type="text"
+                      inputMode="numeric"
+                      pattern="[0-9\\-]*"  // ← '-'를 escape!
                       ref={percentInputRef}
                       value={targetPercentage}
+                      onChange={(e) => {
+                        if (!isCustomInput) return;
+
+                        let value = e.target.value;
+
+                        // 빈 값 허용 (모두 지우기)
+                        if (value === '') {
+                          setTargetPercentage('');
+                          setCalculatedPrice(null);
+                          return;
+                        }
+
+                        // '-' 단독 허용 (마이너스 입력 시작 시)
+                        if (value === '-') {
+                          setTargetPercentage('-');
+                          setCalculatedPrice(null);
+                          return;
+                        }
+
+                        let parsed = parseInt(value, 10);
+                        if (isNaN(parsed)) return;
+
+                        if (parsed > 99) parsed = 99;
+                        if (parsed < -99) parsed = -99;
+
+                        const newValue = String(parsed);
+                        if (newValue !== value) {
+                          e.target.value = newValue;
+                        }
+                        setTargetPercentage(newValue);
+
+                        if (selectedCoin?.price) {
+                          const calc = selectedCoin.price * (1 + parsed / 100);
+                          const finalPrice = isNaN(calc) ? null : Number(calc.toFixed(8));
+                          setCalculatedPrice(finalPrice);
+                        }
+                      }}
+                      readOnly={!isCustomInput}
                       onClick={() => setShowPercentDropdown(!showPercentDropdown)}
-                      readOnly
                       placeholder="0"
                       className={`
-                                  w-full h-full pl-1 pr-5
-                                  border border-gray-400 rounded-lg
-                                  text-right text-sm text-[#2D2D2D]
-                                  ${getPercentColor()} cursor-pointer
-                                `}
+                                w-full h-full pl-1 pr-5
+                                border border-gray-400 rounded-lg
+                                text-right text-sm text-[#2D2D2D]
+                                ${getPercentColor()} cursor-pointer
+                                appearance-none
+                              `}
                   />
+
                   <span className="absolute right-1 top-1/2 -translate-y-1/2 text-xs text-[#2D2D2D] pointer-events-none">%</span>
 
                   {/* 드롭다운을 input 안에 묶은 상대 위치로 이동 */}
@@ -233,26 +275,45 @@ function AlarmAddModal({ onClose, onAddAlert }) {
                           ref={percentDropdownRef}
                           className="absolute left-0 top-[36px] w-20 bg-white text-black rounded-md border border-gray-300 shadow-lg z-50"
                       >
-                        {['10%', '5%', '0%', '-5%', '-10%'].map((option) => {
+                        {['10%', '5%', '0%', '-5%', '-10%', '직접 입력하기'].map((option) => {
+                          const isCustom = option === '직접 입력하기';
                           const numericValue = parseFloat(option);
                           let colorClass = 'text-gray-800';
 
-                          if (numericValue > 0) colorClass = 'text-red-500';
-                          else if (numericValue < 0) colorClass = 'text-blue-500';
-
+                          if (!isNaN(numericValue)) {
+                            if (numericValue > 0) colorClass = 'text-red-500';
+                            else if (numericValue < 0) colorClass = 'text-blue-500';
+                          }
                           return (
                               <li
                                   key={option}
                                   onClick={() => {
+                                    if (isCustom) {
+                                      setIsCustomInput(true);
+                                      setShowPercentDropdown(false);
+                                      // input 포커스
+                                      setTimeout(() => {
+                                        percentInputRef.current?.focus();
+                                      }, 100);
+                                      return;
+                                    } else{
+                                      setIsCustomInput(false); // 드롭다운 모드
+                                      const value = option.replace('%', '');
+                                      setTargetPercentage(value);
+                                      setShowPercentDropdown(false);
+                                      if (selectedCoin?.price) {
+                                        const calc = selectedCoin.price * (1 + parseInt(value, 10) / 100);
+                                        setCalculatedPrice(Number(calc.toFixed(8)));
+                                      }
+                                    }
+
                                     const value = option.replace('%', '');
                                     setTargetPercentage(value);
                                     setShowPercentDropdown(false);
 
-                                    // 계산된 가격 업데이트
-                                    const numericValue = parseFloat(value);
                                     if (selectedCoin?.price) {
-                                      const calc = Math.round(selectedCoin.price * (1 + numericValue / 100));
-                                      setCalculatedPrice(calc);
+                                      const calc = selectedCoin.price * (1 + parseInt(value, 10) / 100);
+                                      setCalculatedPrice(Number(calc.toFixed(8)));
                                     }
                                   }}
                                   className={`px-3 py-2 hover:bg-blue-100 cursor-pointer text-sm font-medium ${colorClass}`}
