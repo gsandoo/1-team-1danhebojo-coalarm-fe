@@ -1,6 +1,5 @@
-import React, { useState, useRef, useEffect, useId } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from "axios";
-// import { subscribeTicker } from '../../utils/upbitWebSocket';
 import dashboardApi from '../../api/dashboardApi';
 
 function AlarmAddModal({ onClose, onAddAlert }) {
@@ -68,7 +67,11 @@ function AlarmAddModal({ onClose, onAddAlert }) {
     const fetchCoins = async () => {
       if (!searchKeyword.trim()) return;
       try {
-        const res = await dashboardApi.searchCoins(searchKeyword);
+        const params = {
+          keyword: searchKeyword,
+          quoteSymbol: 'KRW'
+        }
+        const res = await dashboardApi.searchCoins(params);
         setCoinList(res.data || []);
       } catch (err) {
         console.error('코인 검색 실패:', err);
