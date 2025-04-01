@@ -1,5 +1,5 @@
 // src/pages/Discord.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import userApi from '../api/userApi';
 
@@ -16,7 +16,7 @@ import Toast from '../components/common/Toast';
 function Discord() {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // 처음에는 로딩 상태로 시작
   const [error, setError] = useState(null);
 
   // 토스트 메시지 상태
@@ -25,6 +25,27 @@ function Discord() {
     message: '',
     type: 'success'
   });
+
+  // 컴포넌트 마운트 시 사용자의 디스코드 연동 여부 확인
+  useEffect(() => {
+    const checkDiscordWebhook = async () => {
+      try {
+        const userData = await userApi.getUserInfo();
+        
+        // userData에서 discordWebhook 필드 확인
+        if (userData.discordWebhook) {
+          // 이미 디스코드가 연동되어 있으면 대시보드로 리다이렉트
+          navigate('/dashboard');
+        }
+      } catch (error) {
+        console.error('사용자 정보 조회 실패:', error);
+      } finally {
+        setIsLoading(false); // 데이터 로딩 완료
+      }
+    };
+    
+    checkDiscordWebhook();
+  }, [navigate]);
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -92,6 +113,15 @@ function Discord() {
       setIsLoading(false);
     }
   };
+
+  // 로딩 중이면 로딩 화면 표시
+  if (isLoading) {
+    return (
+      <div className="w-screen h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-blue-800 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-200"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-screen h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-blue-800 flex flex-col items-center justify-center p-6 relative">
