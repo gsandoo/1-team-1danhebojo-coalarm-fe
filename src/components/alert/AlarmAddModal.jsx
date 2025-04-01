@@ -438,7 +438,7 @@ function AlarmAddModal({ onClose, onAddAlert }) {
                         <div key={type} className="flex justify-between items-center mb-4 last:mb-0">
                           <span className="text-[#2D2D2D]">{type}</span>
                           <button
-                              className={`w-12 h-6 rounded-full p-1 transition-colors ${selectedType === type ? 'bg-[#B7BFFF]' : 'bg-[#0A1672]'}`}
+                              className={`w-12 h-6 rounded-full p-1 transition-colors ${selectedType === type ? 'bg-[#0A1672]' : 'bg-[#B7BFFF]'}`}
                               onClick={() => handleTypeSelect(type)}
                           >
                             <div
