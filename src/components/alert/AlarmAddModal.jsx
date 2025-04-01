@@ -34,9 +34,19 @@ function AlarmAddModal({ onClose, onAddAlert }) {
     const sec = String(date.getSeconds()).padStart(2, '0');
     return `${yyyy}.${mm}.${dd}, ${hh}:${min}:${sec} (KST)`;
   };
-  
 
-  
+  const formatPrice = (price) => {
+    if (price === undefined || price === null) return '-';
+
+    const isSmall = price < 1;
+    const formatter = new Intl.NumberFormat('ko-KR', {
+      minimumFractionDigits: isSmall ? 2 : 0,
+      maximumFractionDigits: isSmall ? 8 : 0,
+    });
+
+    return formatter.format(price);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -87,8 +97,8 @@ function AlarmAddModal({ onClose, onAddAlert }) {
     if (selectedType === "지정가" && selectedCoin?.price && targetPercentage.trim() !== '') {
       const percentage = parseFloat(targetPercentage);
       if (!isNaN(percentage)) {
-        const calc = Math.round(selectedCoin.price * (1 + percentage / 100));
-        setCalculatedPrice(calc);
+        const calc = selectedCoin.price * (1 + percentage / 100);
+        setCalculatedPrice(Number(calc.toFixed(8)));
       }
     } else {
       setCalculatedPrice(null);
@@ -257,8 +267,8 @@ function AlarmAddModal({ onClose, onAddAlert }) {
 
                 <span className="text-xs text-gray-500">
                   {calculatedPrice
-                      ? `(${calculatedPrice.toLocaleString()} 원)`
-                      : `(${selectedCoin?.price?.toLocaleString() || '0'} 원)`
+                      ? `(${formatPrice(calculatedPrice)} 원)`
+                      : `(${formatPrice(selectedCoin?.price) || '0'} 원)`
                   }
                 </span>
               </div>
@@ -329,7 +339,7 @@ function AlarmAddModal({ onClose, onAddAlert }) {
                       <span>
                         코인명 : <strong>{selectedCoin.name}</strong> <span className="font-bold">{selectedCoin.symbol}</span>
                       </span>
-                      <span>현재가 : {selectedCoin.price?.toLocaleString() || '-'}</span>
+                      <span>현재가 : {formatPrice(selectedCoin.price) || '-'}</span>
                     </div>
                     <button
                         onClick={() => setSelectedCoin(null)}
@@ -387,7 +397,7 @@ function AlarmAddModal({ onClose, onAddAlert }) {
                               className="flex justify-between items-center px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm"
                             >
                               <span className="w-1/2 truncate">{coin.name} ({coin.symbol})</span>
-                              <span className="w-1/2 text-right">{coin.price?.toLocaleString() || '-'}</span>
+                              <span className="w-1/2 text-right">{formatPrice(coin.price) || '-'}</span>
                             </div>
                           ))}
                       </div>
