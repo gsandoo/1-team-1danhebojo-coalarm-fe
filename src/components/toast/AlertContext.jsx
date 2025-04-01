@@ -1,5 +1,6 @@
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import { toast } from 'sonner';
+const alertSound = new Audio('../../public/kuaa.mp3');
 
 export const connectSSE = () => {
   // 쿠키에서 토큰 가져오기
@@ -54,6 +55,26 @@ export const connectSSE = () => {
   return eventSource;
 };
 
+const playAlertSound = () => {
+  try {    
+    // 소리 재생 (이미 재생 중이면 처음부터 다시 재생)
+    alertSound.pause();
+    alertSound.currentTime = 0;
+    
+    // 사용자 인터랙션이 필요한 경우를 대비한 처리
+    const playPromise = alertSound.play();
+    
+    if (playPromise !== undefined) {
+      console.log("안되고 있어요~");
+      playPromise.catch(error => {
+        console.error('알람 소리 재생 오류:', error);
+      });
+    }
+  } catch (error) {
+    console.error('알람 소리 재생 중 예외 발생:', error);
+  }
+};
+
 // 알림 데이터를 토스트로 표시하는 함수
 const showAlertToast = (alertData) => {
   let title = "알림";
@@ -72,7 +93,9 @@ const showAlertToast = (alertData) => {
   } else {
     message = alertData.title || "새로운 알림이 도착했습니다";
   }
-  
+
+  playAlertSound();
+
   // 토스트 메시지 표시
   toast.info(
     <div className="flex flex-col gap-1">
