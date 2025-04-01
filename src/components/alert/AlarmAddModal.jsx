@@ -275,8 +275,8 @@ function AlarmAddModal({ onClose, onAddAlert }) {
                           ref={percentDropdownRef}
                           className="absolute left-0 top-[36px] w-20 bg-white text-black rounded-md border border-gray-300 shadow-lg z-50"
                       >
-                        {['10%', '5%', '0%', '-5%', '-10%', '직접 입력하기'].map((option) => {
-                          const isCustom = option === '직접 입력하기';
+                        {['10%', '5%', '0%', '-5%', '-10%', '직접 입력'].map((option) => {
+                          const isCustom = option === '직접 입력';
                           const numericValue = parseFloat(option);
                           let colorClass = 'text-gray-800';
 
