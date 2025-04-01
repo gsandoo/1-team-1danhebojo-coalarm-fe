@@ -69,62 +69,64 @@ function KimchiPremium() {
         </div>
       </div>
       
-      {loading ? (
-        <div className="text-center py-6 text-gray-400">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-2"></div>
-          <p>로딩 중...</p>
-        </div>
-      ) : error ? (
-        <div className="text-center py-6 text-red-400">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <p>{error}</p>
-        </div>
-      ) : (
-        <table className="w-full text-left text-md">
-          <thead>
-            <tr className="text-gray-400 border-b border-gray-700">
-              <th className="py-3 pl-3">코인명</th>
-              <th className="py-3 text-right">국내 가격(KRW)</th>
-              <th className="py-3 text-right">해외 가격(USDT)</th>
-              <th className="py-3 pr-3 text-right">김치 프리미엄</th>
-            </tr>
-          </thead>
-          <tbody>
-            {premiumData && premiumData.length > 0 ? (
-              premiumData.map((market) => (
-                <tr key={market.premiumId} className="border-b border-gray-800 hover:bg-blue-900 transition-colors">
-                  <td className="py-4 pl-3">
-                    <div className="flex items-center">
-                      {renderCoinImage(market.coin?.symbol)}
-                      <span className="text-white font-medium">{market.coin?.symbol || '?'}</span>
-                    </div>
-                  </td>
-                  <td className="py-4 text-right text-white font-medium">
-                    {Number(market.domesticPrice).toLocaleString('ko-KR', { maximumFractionDigits: 0 })} <span className="text-gray-400 text-xs">KRW</span>
-                  </td>
-                  <td className="py-4 text-right text-gray-300">
-                    {Number(market.globalPrice).toLocaleString('en-US', { maximumFractionDigits: 2 })} <span className="text-gray-400 text-xs">USDT</span>
-                  </td>
-                  <td className={`py-4 pr-3 text-right font-bold ${Number(market.kimchiPremium) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {Number(market.kimchiPremium) >= 0 ? '+' : ''}{Number(market.kimchiPremium).toFixed(2)}%
+      <div className="overflow-auto h-[calc(100%-56px)]">
+        {loading ? (
+          <div className="text-center py-6 text-gray-400">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-2"></div>
+            <p>로딩 중...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-6 text-red-400">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p>{error}</p>
+          </div>
+        ) : (
+          <table className="w-full text-left text-md">
+            <thead className="sticky top-0 bg-blue-900">
+              <tr className="text-gray-400 border-b border-gray-700">
+                <th className="py-3 pl-3">코인명</th>
+                <th className="py-3 text-right">국내 가격(KRW)</th>
+                <th className="py-3 text-right">해외 가격(USDT)</th>
+                <th className="py-3 pr-3 text-right">김치 프리미엄</th>
+              </tr>
+            </thead>
+            <tbody>
+              {premiumData && premiumData.length > 0 ? (
+                premiumData.map((market) => (
+                  <tr key={market.premiumId} className="border-b border-gray-800 hover:bg-blue-900 transition-colors">
+                    <td className="py-4 pl-3">
+                      <div className="flex items-center">
+                        {renderCoinImage(market.coin?.symbol)}
+                        <span className="text-white font-medium">{market.coin?.symbol || '?'}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 text-right text-white font-medium">
+                      {Number(market.domesticPrice).toLocaleString('ko-KR', { maximumFractionDigits: 0 })} <span className="text-gray-400 text-xs">KRW</span>
+                    </td>
+                    <td className="py-4 text-right text-gray-300">
+                      {Number(market.globalPrice).toLocaleString('en-US', { maximumFractionDigits: 2 })} <span className="text-gray-400 text-xs">USDT</span>
+                    </td>
+                    <td className={`py-4 pr-3 text-right font-bold ${Number(market.kimchiPremium) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {Number(market.kimchiPremium) >= 0 ? '+' : ''}{Number(market.kimchiPremium).toFixed(2)}%
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="py-6 text-center text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    </svg>
+                    <p>데이터가 없습니다.</p>
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" className="py-6 text-center text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                  </svg>
-                  <p>데이터가 없습니다.</p>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      )}
+              )}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }
