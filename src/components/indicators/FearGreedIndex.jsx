@@ -1,9 +1,10 @@
 // src/components/indicators/FearGreedIndex.jsx
-import React, { useState } from 'react';
+import React from 'react';
 import Tooltip from '../common/Tooltip';
+import useTooltipPosition from '../../hooks/useTooltipPosition';
 
 function FearGreedIndex({ value }) {
-  const [showTooltip, setShowTooltip] = useState(false);
+  const { visible, position, onMouseEnter, onMouseLeave } = useTooltipPosition();
   
   const getStatusText = () => {
     if (value === null) return '로딩 중';
@@ -32,13 +33,13 @@ function FearGreedIndex({ value }) {
             className="h-5 w-5 text-white opacity-50 cursor-pointer hover:opacity-100" 
             viewBox="0 0 20 20" 
             fill="currentColor"
-            onMouseEnter={() => setShowTooltip(true)}
-            onMouseLeave={() => setShowTooltip(false)}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
           >
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
           </svg>
 
-          <Tooltip visible={showTooltip}>
+          <Tooltip visible={visible} position={position}>
             <p><strong>0~24:</strong> 극단적 공포</p>
             <p><strong>25~39:</strong> 공포</p>
             <p><strong>40~60:</strong> 중립</p>

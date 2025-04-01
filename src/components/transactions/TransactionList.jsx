@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Tooltip from '../common/Tooltip';
+import useTooltipPosition from '../../hooks/useTooltipPosition';
 
 function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
   const [transactions, setTransactions] = useState([]);
-  const [showTooltip, setShowTooltip] = useState(false);
+  const { visible, position, onMouseEnter, onMouseLeave } = useTooltipPosition();
   const scrollRef = useRef(null);
   const componentId = useId();
 
@@ -118,13 +119,13 @@ function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
             className="h-6 w-6 text-white opacity-50 cursor-pointer hover:opacity-100" 
             viewBox="0 0 20 20" 
             fill="currentColor"
-            onMouseEnter={() => setShowTooltip(true)}
-            onMouseLeave={() => setShowTooltip(false)}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
           >
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
           </svg>
           
-          <Tooltip visible={showTooltip}>
+          <Tooltip visible={visible} position={position}>
             {isWhale ? (
               <p className="leading-relaxed">1,000만원 이상의 {symbol} 거래를 실시간으로 표시합니다.</p>
             ) : (

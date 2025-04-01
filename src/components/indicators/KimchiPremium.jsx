@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import dashboardApi from '../../api/dashboardApi';
 import Tooltip from '../common/Tooltip';
+import useTooltipPosition from '../../hooks/useTooltipPosition';
 
 function KimchiPremium() {
   const [premiumData, setPremiumData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showTooltip, setShowTooltip] = useState(false);
+  const { visible, position, onMouseEnter, onMouseLeave } = useTooltipPosition();
   
   useEffect(() => {
     const fetchKimchiPremium = async () => {
@@ -56,13 +57,13 @@ function KimchiPremium() {
             className="h-5 w-5 text-white opacity-50 cursor-pointer hover:opacity-100" 
             viewBox="0 0 20 20" 
             fill="currentColor"
-            onMouseEnter={() => setShowTooltip(true)}
-            onMouseLeave={() => setShowTooltip(false)}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
           >
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
           </svg>
           
-          <Tooltip visible={showTooltip}>
+          <Tooltip visible={visible} position={position}>
             <p className="mb-3"><strong>국내 거래소:</strong> 업비트 / <strong>해외 거래소:</strong> 바이낸스</p>
             <p className="leading-relaxed">국내 거래소에서 코인이 해외 거래소보다 비싸게 거래되는 현상</p>
           </Tooltip>
