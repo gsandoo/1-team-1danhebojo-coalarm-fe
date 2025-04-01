@@ -9,7 +9,7 @@ const ToggleSwitch = ({ value, onToggle, offValue = false }) => {
     return (
         <div
             className={`border border-[#B7BFFF] relative w-[60px] h-[32px] rounded-full cursor-pointer transition-colors duration-300 ${
-                value ? 'bg-[#B7BFFF]' : 'bg-[#081159]'
+                value ? 'bg-[#0A1672]' : 'bg-[#B7BFFF]'
             }`}
             onClick={handleClick}
         >
