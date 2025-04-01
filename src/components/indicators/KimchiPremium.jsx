@@ -8,6 +8,30 @@ function KimchiPremium() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { visible, position, onMouseEnter, onMouseLeave } = useTooltipPosition();
+
+  const scrollbarStyles = `
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 2px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 2px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+    .custom-scrollbar {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+    }
+    .custom-scrollbar::-webkit-scrollbar-horizontal {
+      display: none;
+    }
+  `;
   
   useEffect(() => {
     const fetchKimchiPremium = async () => {
@@ -49,6 +73,7 @@ function KimchiPremium() {
   
   return (
     <div className="bg-blue-900 rounded-lg p-5 relative h-[300px]">
+      <style>{scrollbarStyles}</style>
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-white text-xl font-bold">김치 프리미엄</h3>
         <div className="relative">
@@ -70,7 +95,7 @@ function KimchiPremium() {
         </div>
       </div>
       
-      <div className="overflow-auto h-[calc(100%-56px)]">
+      <div className="overflow-auto custom-scrollbar h-[calc(100%-56px)]" style={{ scrollbarWidth: 'thin' }}>
         {loading ? (
           <div className="text-center py-6 text-gray-400">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto mb-2"></div>
