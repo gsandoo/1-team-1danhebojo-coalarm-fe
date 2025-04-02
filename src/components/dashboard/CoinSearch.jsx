@@ -10,6 +10,19 @@ const CoinSearch = ({ onSelectCoin }) => {
   const firstRender = useRef(true);
   const searchRef = useRef(null);
 
+  // Load recent searches from sessionStorage on component mount
+  useEffect(() => {
+    const savedSearches = sessionStorage.getItem('recentCoinSearches');
+    if (savedSearches) {
+      try {
+        setRecentSearches(JSON.parse(savedSearches));
+      } catch (e) {
+        console.error('Failed to parse recent searches:', e);
+        sessionStorage.removeItem('recentCoinSearches');
+      }
+    }
+  }, []);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -66,10 +79,15 @@ const CoinSearch = ({ onSelectCoin }) => {
 
   const updateRecentSearches = (coinData) => {
     if (!coinData || !coinData.coinId) return;
+    
+    // Update state
     setRecentSearches(prev => {
       const filtered = prev.filter(item => item && item.coinId !== coinData.coinId);
       const updatedSearches = [coinData, ...filtered].slice(0, 5);
-      localStorage.setItem('recentCoinSearches', JSON.stringify(updatedSearches));
+      
+      // Save to sessionStorage
+      sessionStorage.setItem('recentCoinSearches', JSON.stringify(updatedSearches));
+      
       return updatedSearches;
     });
   };
@@ -80,10 +98,16 @@ const CoinSearch = ({ onSelectCoin }) => {
     if (onSelectCoin) onSelectCoin(coin);
   };
 
+  // This was originally resetting search history on first render
+  // Now we'll only reset if explicitly needed or if there's an error
   useEffect(() => {
     if (firstRender.current) {
-      localStorage.removeItem('recentCoinSearches');
-      setRecentSearches([]);
+      // Check if there's already data in sessionStorage instead of clearing it
+      const existingSearches = sessionStorage.getItem('recentCoinSearches');
+      if (!existingSearches) {
+        // Only initialize with empty array if no data exists
+        sessionStorage.setItem('recentCoinSearches', JSON.stringify([]));
+      }
       firstRender.current = false;
     }
   }, []);

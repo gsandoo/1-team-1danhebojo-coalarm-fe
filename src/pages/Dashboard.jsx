@@ -29,6 +29,7 @@ function Dashboard() {
   const [shortLongData, setShortLongData] = useState({ longRatio: 52.39, shortRatio: 47.61 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [recentSearches, setRecentSearches] = useState([]);
   
 
   // API 데이터 가져오기
@@ -133,12 +134,12 @@ function Dashboard() {
 
 
   return (
-    <div className="flex bg-[#0E106C] min-h-screen pt-[80px] pl-[300px]">
+    <div className="flex bg-[#0E106C] min-h-screen overflow-hidden">
       {/* 사이드바 컴포넌트 */}
       <Sidebar />
       
       {/* 메인 컨텐츠 */}
-      <div className="flex-1 p-5 overflow-y-auto h-screen">
+      <div className="flex-1 p-5 overflow-y-auto h-[calc(100vh-80px)] mt-[80px] ml-[300px]">
         {/* 알림 배너 */}
         <div className="flex items-center bg-blue-800 rounded-md p-3 mb-5 relative">
           <div className="mr-2 text-white">
