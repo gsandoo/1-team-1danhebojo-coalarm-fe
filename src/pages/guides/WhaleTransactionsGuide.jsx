@@ -34,7 +34,7 @@ function WhaleTransactionsGuide() {
                     <div className="grid grid-cols-3 w-full gap-4">
                       <div className="bg-red-500/30 rounded-lg p-3 text-center">
                         <div className="font-bold mb-1">대량 매도</div>
-                        <div className="text-sm">고래 매도 > 매수</div>
+                        <div className="text-sm">고래 매도 {'>'} 매수</div>
                       </div>
                       <div className="bg-yellow-500/30 rounded-lg p-3 text-center">
                         <div className="font-bold mb-1">균형 상태</div>
@@ -42,7 +42,7 @@ function WhaleTransactionsGuide() {
                       </div>
                       <div className="bg-green-500/30 rounded-lg p-3 text-center">
                         <div className="font-bold mb-1">대량 매수</div>
-                        <div className="text-sm">고래 매수 > 매도</div>
+                        <div className="text-sm">고래 매수 {'>'} 매도</div>
                       </div>
                     </div>
                   </div>
