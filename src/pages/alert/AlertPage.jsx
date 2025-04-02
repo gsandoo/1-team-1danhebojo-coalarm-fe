@@ -21,7 +21,6 @@ const AlertPage = () => {
     const handleAlertAdd = (newAlert) => {
         setAlerts((prev) => [newAlert, ...prev]); // 최신순으로 추가
         setTotalCount((prev) => prev + 1);
-
         if (sortOption !== 'LATEST') {
             setSortOption('LATEST');
             alert("새 알람이 추가되어 최신순으로 정렬되었어요.");
@@ -34,7 +33,7 @@ const AlertPage = () => {
 
             // 삭제된 알람 목록에서 제거
             setAlerts((prev) => prev.filter((alert) => alert.alertId !== alertId));
-
+            setTotalCount((prev) => prev - 1);
             dispatch(closeDeleteModal());
         } catch (err) {
             console.error("알람을 삭제하는데 실패했습니다.", err);
@@ -138,7 +137,7 @@ const AlertPage = () => {
         };
 
         fetchMyAlertCoins();
-    }, []);
+    }, [alerts]);
 
     // 코인 목록 드롭 다운
     const toggleDropdown = () => {
