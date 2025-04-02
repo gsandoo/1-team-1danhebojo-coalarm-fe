@@ -21,7 +21,6 @@ function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
   
     eventSource.onmessage = (event) => {
       try {
-        console.log('📥 수신된 원본 데이터:', event.data);
         const data = JSON.parse(event.data);
         const tradeAmount = data.trade_price * data.trade_volume;
     
