@@ -1,6 +1,6 @@
 import { EventSourcePolyfill } from 'event-source-polyfill';
 import { toast } from 'sonner';
-const alertSound = new Audio('../../public/kuaa.mp3');
+const alertSound = new Audio('/kuaa.mp3');
 
 export const connectSSE = () => {
   // 쿠키에서 토큰 가져오기
@@ -65,7 +65,6 @@ const playAlertSound = () => {
     const playPromise = alertSound.play();
     
     if (playPromise !== undefined) {
-      console.log("안되고 있어요~");
       playPromise.catch(error => {
         console.error('알람 소리 재생 오류:', error);
       });
