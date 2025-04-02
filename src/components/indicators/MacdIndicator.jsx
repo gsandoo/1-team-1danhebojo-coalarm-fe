@@ -6,7 +6,13 @@ function MacdIndicator({ macd, signal, histogram }) {
   const { visible, position, onMouseEnter, onMouseLeave } = useTooltipPosition();
 
   const formatNumber = (value) => {
-    return Number(value).toFixed(2);
+    // Convert to number to ensure proper formatting
+    const num = Number(value);
+    // Format with commas for thousands and fixed 2 decimal places
+    return num.toLocaleString('ko-KR', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
   };
 
   const getTrendText = () => {
