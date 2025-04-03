@@ -3,25 +3,6 @@ import { IconVolume, IconPagination } from '../../assets/images/mypage/Icons';
 import AlarmDetailModal from './AlarmDetailModal';
 import userApi from '../../api/userApi';
 
-// 날짜를 한국 시간대로 변환하는 함수
-const convertToKoreanTime = (dateString) => {
-  // UTC 날짜 생성
-  const date = new Date(dateString);
-  
-  // 한국 시간대 (UTC+9)로 조정
-  const koreanTime = new Date(date.getTime() + (9 * 60 * 60 * 1000));
-  
-  // 한국 시간 형식으로 포맷팅
-  return koreanTime.toLocaleString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true // 24시간제 사용
-  });
-};
-
 function NotificationSection({ currentPage, setCurrentPage }) {
   const [notifications, setNotifications] = useState([]);
   const [selectedNotice, setSelectedNotice] = useState(null);
@@ -29,40 +10,90 @@ function NotificationSection({ currentPage, setCurrentPage }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const ITEMS_PER_PAGE = 3;
 
+  // 초기 데이터 로드 및 총 페이지 계산
   useEffect(() => {
+    const initializeData = async () => {
+      setLoading(true);
+      try {
+        const response = await userApi.getAlertHistory(0, ITEMS_PER_PAGE);
+        const totalItems = response.data?.totalElements || 0;
+        const maxValidPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+        
+        setTotalElements(totalItems);
+        setTotalPages(maxValidPages);
+        
+        // 현재 페이지가 총 페이지보다 크면 마지막 페이지로 조정
+        if (currentPage > maxValidPages) {
+          setCurrentPage(maxValidPages);
+        }
+        
+        setIsInitialized(true);
+      } catch (err) {
+        console.error('초기 페이지 정보 로드 실패:', err);
+        setError('알람 내역을 불러오는데 실패했습니다.');
+        setIsInitialized(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    initializeData();
+  }, []);
+
+  // 현재 페이지 데이터 로드
+  useEffect(() => {
+    // 초기화되지 않았으면 아직 첫번째 useEffect가 실행 중이므로 건너뜀
+    if (!isInitialized) return;
+    
     const fetchAlertHistory = async () => {
       setLoading(true);
       setError(null);
       
       try {
+        const pageNumber = currentPage - 1;
         const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-        const response = await userApi.getAlertHistory(offset, ITEMS_PER_PAGE);
+        
+        // 현재 페이지 데이터 로드
+        const response = await userApi.getAlertHistory(pageNumber, ITEMS_PER_PAGE);
         console.log('알람 히스토리 조회 결과:', response);
         
         // 응답 구조 확인을 통한 데이터 추출
         const alerts = response.data?.contents || [];
-        const totalElements = response.data?.totalElements || 0;
+        const totalItems = response.data?.totalElements || 0;
         
-        if (alerts.length > 0) {
-          // 알림 데이터 변환 및 설정
-          setNotifications(alerts.map((alert, index) => ({
-            id: alert.alertHistoryId,
-            // 실제 번호 대신 페이지 내에서 역순으로 번호 부여 (가장 최근 알람이 1번)
-            displayNumber: totalElements - offset - index,
-            content: alert.alert?.title || `알림 ${alert.alertHistoryId}`,
-            // 한국 시간대로 변환
-            date: convertToKoreanTime(alert.registeredDate)
-          })));
-          
-          // 총 페이지 수 계산
-          setTotalPages(Math.ceil(totalElements / ITEMS_PER_PAGE));
-        } else {
-          setNotifications([]);
-          setTotalPages(1);
+        // totalPages 및 totalElements 업데이트
+        const calculatedTotalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+        setTotalElements(totalItems);
+        setTotalPages(calculatedTotalPages);
+        
+        // 알림 데이터 설정
+        setNotifications(alerts.map((alert, index) => ({
+          id: alert.alertHistoryId,
+          // 실제 번호 대신 페이지 내에서 역순으로 번호 부여 (가장 최근 알람이 1번)
+          displayNumber: totalItems - (pageNumber * ITEMS_PER_PAGE) - index,
+          content: alert.alert?.title || `알림 ${alert.alertHistoryId}`,
+          // 날짜 포맷팅
+          date: new Date(alert.registeredDate).toLocaleString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          })
+        })));
+        
+        // 빈 데이터 처리 - 특별한 경우만 체크
+        if (alerts.length === 0 && currentPage !== 1 && totalItems > 0) {
+          console.log(`페이지(${currentPage})에 데이터가 없습니다. 마지막 유효 페이지로 이동합니다.`);
+          setCurrentPage(calculatedTotalPages);
         }
+        
       } catch (err) {
         console.error('알람 히스토리 조회 실패:', err);
         
@@ -89,7 +120,7 @@ function NotificationSection({ currentPage, setCurrentPage }) {
     };
 
     fetchAlertHistory();
-  }, [currentPage, setCurrentPage]);
+  }, [currentPage, isInitialized]);
 
   
   const handleNoticeClick = async (notice) => {
@@ -99,9 +130,16 @@ function NotificationSection({ currentPage, setCurrentPage }) {
       const response = await userApi.getAlertDetail(notice.id);
       console.log('알람 상세 조회 결과:', response);
       
-      // 상세 조회 결과에 있는 날짜도 한국 시간으로 변환
+      // 상세 조회 결과에 있는 날짜도 포맷팅
       if (response && response.data && response.data.registeredDate) {
-        response.data.formattedDate = convertToKoreanTime(response.data.registeredDate);
+        response.data.formattedDate = new Date(response.data.registeredDate).toLocaleString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
       }
       
       setSelectedNotice(response);
@@ -121,7 +159,9 @@ function NotificationSection({ currentPage, setCurrentPage }) {
 
   const renderPageNumbers = () => {
     const pageNumbers = [];
-    const maxDisplayPages = 3;
+    const maxDisplayPages = 5;
+    
+    if (totalPages <= 0) return pageNumbers;
     
     let startPage = Math.max(1, currentPage - Math.floor(maxDisplayPages / 2));
     let endPage = Math.min(totalPages, startPage + maxDisplayPages - 1);
@@ -135,6 +175,14 @@ function NotificationSection({ currentPage, setCurrentPage }) {
     }
     
     return pageNumbers;
+  };
+
+  // 페이지 이동 처리 함수
+  const handlePageChange = (pageNumber) => {
+    // 유효한 페이지 범위인지 확인
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
   };
 
   return (
@@ -178,12 +226,12 @@ function NotificationSection({ currentPage, setCurrentPage }) {
           </div>
         </div>
         
-        {/* 페이지네이션 - 총 페이지가 1보다 클 때만 표시 */}
-        {totalPages > 1 && (
+        {/* 페이지네이션 - 데이터가 있고 총 페이지가 1보다 클 때만 표시 */}
+        {totalElements > 0 && totalPages > 1 && (
           <div className="flex justify-center items-center space-x-2 mt-auto mb-2">
             <button 
               className={`text-gray-300 hover:text-white ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-              onClick={() => currentPage > 1 && setCurrentPage(prev => prev - 1)}
+              onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
             >
               <IconPagination direction="left" className="w-3 h-3" />
@@ -195,7 +243,7 @@ function NotificationSection({ currentPage, setCurrentPage }) {
                 className={`w-5 h-5 flex items-center justify-center rounded-full text-xs ${
                   currentPage === page ? 'bg-blue-600 text-white' : 'text-gray-300 hover:text-white'
                 }`}
-                onClick={() => setCurrentPage(page)}
+                onClick={() => handlePageChange(page)}
               >
                 {page}
               </button>
@@ -203,7 +251,7 @@ function NotificationSection({ currentPage, setCurrentPage }) {
             
             <button 
               className={`text-gray-300 hover:text-white ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}`}
-              onClick={() => currentPage < totalPages && setCurrentPage(prev => prev + 1)}
+              onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
             >
               <IconPagination direction="right" className="w-3 h-3" />
