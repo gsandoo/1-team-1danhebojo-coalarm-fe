@@ -18,7 +18,7 @@ function Dashboard() {
   const { coinId = 1 } = useParams();
 
   const [coinData, setCoinData] = useState({ symbol: 'BTC', name: '비트코인' });
-  const [fearGreedIndex, setFearGreedIndex] = useState(55.0);
+  const [fearGreedIndex, setFearGreedIndex] = useState(null);
   const [macdData, setMacdData] = useState({ 
     macd: -987.29, 
     signal: -687.23, 
@@ -29,6 +29,7 @@ function Dashboard() {
   const [shortLongData, setShortLongData] = useState({ longRatio: 52.39, shortRatio: 47.61 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [recentSearches, setRecentSearches] = useState([]);
   
 
   // API 데이터 가져오기
@@ -133,12 +134,12 @@ function Dashboard() {
 
 
   return (
-    <div className="flex bg-[#0E106C] min-h-screen max-w-screen overflow-hidden">
+    <div className="flex bg-[#0E106C] min-h-screen overflow-hidden">
       {/* 사이드바 컴포넌트 */}
       <Sidebar />
       
       {/* 메인 컨텐츠 */}
-      <div className="flex-1 p-5 overflow-y-auto h-screen">
+      <div className="flex-1 p-5 overflow-y-auto h-[calc(100vh-80px)] mt-[80px] ml-[300px]">
         {/* 알림 배너 */}
         <div className="flex items-center bg-blue-800 rounded-md p-3 mb-5 relative">
           <div className="mr-2 text-white">
@@ -146,11 +147,8 @@ function Dashboard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-white text-sm">모든 투자에 대한 책임은 전적으로 투자자 본인에게 있습니다. 코알람은 투자 판단을 돕기 위한 정보 제공 서비스일 뿐, 어떠한 투자 결정도 대신하지 않습니다.</p>
+          <p className="text-white text-m">모든 투자에 대한 책임은 전적으로 투자자 본인에게 있습니다. 코알람은 투자 판단을 돕기 위한 정보 제공 서비스일 뿐, 어떠한 투자 결정도 대신하지 않습니다.</p>
           <button className="absolute right-3 text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-            </svg>
           </button>
         </div>
         

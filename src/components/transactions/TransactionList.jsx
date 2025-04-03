@@ -1,113 +1,67 @@
-// src/components/transactions/TransactionList.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useId } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Tooltip from '../common/Tooltip';
+import useTooltipPosition from '../../hooks/useTooltipPosition';
 
 function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
   const [transactions, setTransactions] = useState([]);
-  const [showTooltip, setShowTooltip] = useState(false);
-  const ws = useRef(null);
+  const { visible, position, onMouseEnter, onMouseLeave } = useTooltipPosition();
   const scrollRef = useRef(null);
-  
-  // 숫자를 한국어 단위로 포맷팅하는 함수 (억, 천만, 백만 등)
-  const formatKoreanNumber = (num) => {
-    if (num === 0) return '0원';
-    if (num < 10000) {
-      return num.toLocaleString('ko-KR') + '원';
-    }
-    
-    const units = ['', '만', '억', '조'];
-    let result = '';
-    let unitIndex = 0;
-    let remainder = num;
-    
-    while (remainder > 0) {
-      const digit = remainder % 10000;
-      if (digit > 0) {
-        result = (digit > 0 ? digit.toLocaleString('ko-KR') + units[unitIndex] : '') + result;
-      }
-      unitIndex++;
-      remainder = Math.floor(remainder / 10000);
-    }
-    
-    return result + '원';
-  };
-  
+  const componentId = useId();
+
   useEffect(() => {
-    // symbol이 바뀌면 기존 거래 내역을 초기화
     setTransactions([]);
-    
-    // 웹소켓 연결
-    connectWebSocket();
-    
-    // 컴포넌트 언마운트 시 웹소켓 연결 해제
-    return () => {
-      if (ws.current) {
-        ws.current.close();
-      }
-    };
-  }, [symbol]); // symbol이 변경될 때마다 실행
   
-  const connectWebSocket = () => {
-    // 기존 웹소켓 연결 해제
-    if (ws.current) {
-      ws.current.close();
-    }
-    
-    // 새 웹소켓 연결
-    ws.current = new WebSocket('wss://api.upbit.com/websocket/v1');
-    
-    ws.current.onopen = () => {
-      if (ws.current.readyState === WebSocket.OPEN) {
-        // 체결 내역을 구독하는 메시지
-        const subscribeMsg = [
-          { ticket: `trade_${symbol}_${isWhale ? 'whale' : 'normal'}` },
-          { type: 'trade', codes: [`KRW-${symbol}`] },
-          { format: 'SIMPLE' }
-        ];
-        ws.current.send(JSON.stringify(subscribeMsg));
-      }
+    const url = `${import.meta.env.VITE_BASE_URL}/sse/trade/${symbol}`;
+    const eventSource = new EventSource(url);
+  
+    eventSource.onopen = () => {
+      console.log(`✅ SSE 연결 성공: ${symbol}`);
     };
-    
-    ws.current.onmessage = async (event) => {
+  
+    eventSource.onmessage = (event) => {
       try {
-        const buffer = await event.data.arrayBuffer();
-        const text = new TextDecoder('utf-8').decode(buffer);
-        const data = JSON.parse(text);
-        
-        // 데이터 형식 변환
+        const data = JSON.parse(event.data);
+        const tradeAmount = data.trade_price * data.trade_volume;
+    
+        if (isWhale && tradeAmount < 10000000) return;
+    
         const transaction = {
-          id: Date.now() + Math.random(),
+          id: `${Date.now()}_${symbol}_${isWhale ? 'whale' : 'normal'}_${Math.random().toString(36).substring(2, 9)}`,
           coin: symbol,
-          price: data.tp, // trade_price (매수/매도 가격)
-          amount: data.tv, // trade_volume
-          type: data.ab === 'BID' ? 'buy' : 'sell', // ask_bid (BID: 매수, ASK: 매도)
-          time: new Date(data.tms).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) // trade_timestamp
+          price: data.trade_price,
+          amount: data.trade_volume,
+          type: data.ask_bid === 'BID' ? 'buy' : 'sell',
+          time: new Date(data.trade_timestamp).toLocaleTimeString('ko-KR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false,
+          }),
         };
-        
-        // 고래 거래 필터링 (1,000만원 이상의 거래)
-        const tradeAmount = data.tp * data.tv; // 가격 * 거래량 = 거래 금액
-        
-        if ((isWhale && tradeAmount >= 10000000) || (!isWhale)) {
-          setTransactions(prev => {
-            const newTransactions = [transaction, ...prev].slice(0, 50); // 더 많은 거래 내역 유지 (스크롤 가능)
-            return newTransactions;
-          });
-        }
-      } catch (error) {
-        console.error('WebSocket message parsing error:', error);
+    
+        setTransactions((prev) => {
+          const newTx = [transaction, ...prev].slice(0, 50);
+          return newTx;
+        });
+      } catch (err) {
+        console.error('❌ SSE JSON 파싱 실패:', err);
       }
     };
     
-    ws.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-    
-    ws.current.onclose = () => {
-      console.log('WebSocket connection closed');
-    };
-  };
   
-  // 스크롤바 스타일
+    eventSource.onerror = (err) => {
+      console.error('❗ SSE 연결 오류:', err);
+      eventSource.close();
+    };
+  
+    return () => {
+      console.log(`🛑 SSE 연결 종료: ${symbol}`);
+      eventSource.close();
+    };
+  }, [symbol, isWhale]);
+  
+
   const scrollbarStyles = `
     .custom-scrollbar::-webkit-scrollbar {
       width: 4px;
@@ -132,13 +86,25 @@ function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
     }
   `;
 
-  // 코인 이름 맵핑 (심볼 -> 한글 이름)
-  const coinNames = {
-    'BTC': '비트코인',
-    'USDC': 'USD 코인',
-    'NEO': '네오',
-    'XRP': '리플',
-    'ETC': '이더리움 클래식'
+  const formatKoreanNumber = (num) => {
+    if (num === 0) return '0원';
+    if (num < 10000) return num.toLocaleString('ko-KR') + '원';
+
+    const units = ['', '만', '억', '조'];
+    let result = '';
+    let unitIndex = 0;
+    let remainder = num;
+
+    while (remainder > 0) {
+      const digit = remainder % 10000;
+      if (digit > 0) {
+        result = digit.toLocaleString('ko-KR') + units[unitIndex] + result;
+      }
+      unitIndex++;
+      remainder = Math.floor(remainder / 10000);
+    }
+
+    return result + '원';
   };
 
   return (
@@ -152,21 +118,19 @@ function TransactionList({ title, symbol = 'BTC', isWhale = false }) {
             className="h-6 w-6 text-white opacity-50 cursor-pointer hover:opacity-100" 
             viewBox="0 0 20 20" 
             fill="currentColor"
-            onMouseEnter={() => setShowTooltip(true)}
-            onMouseLeave={() => setShowTooltip(false)}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
           >
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
           </svg>
           
-          {showTooltip && (
-            <div className="absolute right-0 w-64 bg-gray-800 text-white p-2 rounded-md text-sm z-10 shadow-lg">
-              {isWhale ? (
-                <p>1,000만원 이상의 {symbol} 거래를 실시간으로 표시합니다.</p>
-              ) : (
-                <p>실시간으로 업데이트되는 {symbol} 거래 내역입니다.</p>
-              )}
-            </div>
-          )}
+          <Tooltip visible={visible} position={position}>
+            {isWhale ? (
+              <p className="leading-relaxed">1,000만원 이상의 {symbol} 거래를 실시간으로 표시합니다.</p>
+            ) : (
+              <p className="leading-relaxed">실시간으로 업데이트되는 {symbol} 거래 내역입니다.</p>
+            )}
+          </Tooltip>
         </div>
       </div>
       
