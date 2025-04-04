@@ -18,6 +18,8 @@ const AlertPage = () => {
     const { isOpen: isDeleteOpen, alertId } = useSelector((state) => state.deleteModal);
     const { isOpen: isCreateOpen } = useSelector((state) => state.createAlertModal);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [retryCount, setRetryCount] = useState(0);
+    const [retryDelay, setRetryDelay] = useState(2000);
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -109,8 +111,35 @@ const AlertPage = () => {
             setOffset(customOffset + limit);
             setHasNext(nextPageExists);
             setTotalCount(totalElements);
+
+            setRetryCount(0);
+            setRetryDelay(2000);
         } catch (err) {
             console.error('알람 목록 로딩 실패:', err);
+            setFetchError(true);
+            
+            // 재시도 횟수 증가
+            const newRetryCount = retryCount + 1;
+            setRetryCount(newRetryCount);
+            
+            // 최대 재시도 횟수 초과 시 더 이상 시도하지 않음
+            if (newRetryCount >= maxRetries) {
+                setHasNext(false);
+                console.log(`최대 재시도 횟수(${maxRetries})를 초과했습니다. 데이터 로딩을 중단합니다.`);
+            } else {
+                // 지수 백오프 적용 (재시도마다 지연 시간 증가)
+                const newDelay = retryDelay * 2;
+                setRetryDelay(newDelay);
+                
+                // 지연 후 재시도
+                setTimeout(() => {
+                    setIsFetching(false); // 재시도를 위해 fetching 상태 해제
+                }, newDelay);
+                
+                console.log(`${newDelay}ms 후 재시도합니다. (${newRetryCount}/${maxRetries})`);
+                return; // setTimeout에서 isFetching을 false로 설정할 것이므로 여기서 함수 종료
+            }
+
         } finally {
             setIsFetching(false);
         }
