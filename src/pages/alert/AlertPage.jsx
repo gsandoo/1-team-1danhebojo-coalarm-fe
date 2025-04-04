@@ -10,12 +10,25 @@ import {closeDeleteModal} from "../../redux/deleteModalSlice.js";
 import {openModal, closeModal} from "../../redux/createAlertModalSlice.js";
 import AlarmDeleteModal from "../../components/alert/AlarmDeleteModal.jsx";
 import AlarmAddModal from "../../components/alert/AlarmAddModal.jsx";
+import LoginRequiredModal from "../../components/modals/LoginRequiredModal.jsx";
+import { getTokenFromCookie } from "../../utils/cookieUtils.js";
 
 const AlertPage = () => {
     // 삭제 모달 전역 상태
     const { isOpen: isDeleteOpen, alertId } = useSelector((state) => state.deleteModal);
     const { isOpen: isCreateOpen } = useSelector((state) => state.createAlertModal);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const dispatch = useDispatch();
+
+    useEffect(() => {
+        const token = getTokenFromCookie();
+        
+        if (token) {
+            setIsLoggedIn(true);
+        } else {
+            setIsLoggedIn(false);
+        }
+    }, []);
 
     // 추가: 알람 등록 시 새 알람 추가
     const handleAlertAdd = (newAlert) => {
@@ -269,6 +282,11 @@ const AlertPage = () => {
                             onConfirm={handleDeleteConfirm}
                         />
                     )}
+
+                    {!isLoggedIn &&(
+                        <LoginRequiredModal />
+                    )}
+                    
 
                     {isCreateOpen && (
                         <AlarmAddModal
