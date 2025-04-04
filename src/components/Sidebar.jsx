@@ -67,10 +67,10 @@ function Sidebar() {
   // 로그인/로그아웃 버튼 핸들러
   const handleAuthButton = () => {
     if (isLoggedIn) {
+      window.location.href = `${import.meta.env.VITE_BASE_URL}/auth/logout`;
       // 로그아웃 처리 - 쿠키 삭제
       deleteCookie('Authorization');
       setIsLoggedIn(false);
-      window.location.href = '/';
     } else {
       // 로그인 페이지로 이동
       navigate('/login');
