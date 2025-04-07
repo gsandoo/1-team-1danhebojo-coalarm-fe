@@ -180,8 +180,6 @@ function Discord() {
             알람 받을 디스코드 계정 연동
           </h3>
           <p className="text-white text-xs sm:text-sm md:text-base opacity-70 text-left w-full">
-            디스코드은 구글 계정이 필요해요.
-            <br />
             디스코드 앱에서 알람을 받을 수 있어요.
           </p>
         </div>
