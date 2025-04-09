@@ -35,7 +35,7 @@ function NotificationSection({ currentPage, setCurrentPage }) {
         setIsInitialized(true);
       } catch (err) {
         console.error('초기 페이지 정보 로드 실패:', err);
-        setError('알람 내역을 불러오는데 실패했습니다.');
+        setError('알람 히스토리를 불러오는데 실패했습니다.');
         setIsInitialized(true);
       } finally {
         setLoading(false);
@@ -98,7 +98,7 @@ function NotificationSection({ currentPage, setCurrentPage }) {
         console.error('알람 히스토리 조회 실패:', err);
         
         // 에러 메시지
-        let errorMessage = '알람 내역을 불러오는데 실패했습니다.';
+        let errorMessage = '알람 히스토리를 불러오는데 실패했습니다.';
         
         if (err.response && err.response.status === 500) {
           const errorData = err.response.data;
@@ -191,7 +191,7 @@ function NotificationSection({ currentPage, setCurrentPage }) {
         <div>
           <div className="flex items-center mb-3">
             <IconVolume className="mr-2 text-white w-4 h-4" />
-            <h2 className="font-medium text-white text-base ml-2">알람 내역</h2>
+            <h2 className="font-medium text-white text-base ml-2">알람 히스토리</h2>
           </div>
           
           {/* 알람 테이블 */}
@@ -208,7 +208,7 @@ function NotificationSection({ currentPage, setCurrentPage }) {
               ) : error ? (
                 <div className="text-center py-10 text-red-400">{error}</div>
               ) : notifications.length === 0 ? (
-                <div className="text-center py-10 text-gray-400">알람 내역이 없습니다.</div>
+                <div className="text-center py-10 text-gray-400">알람 히스토리가 없습니다.</div>
               ) : (
                 notifications.map(notice => (
                   <div 
