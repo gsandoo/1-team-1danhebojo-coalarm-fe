@@ -139,7 +139,6 @@ const AlertPage = () => {
             // 최대 재시도 횟수 초과 시 더 이상 시도하지 않음
             if (newRetryCount >= maxRetries) {
                 setHasNext(false);
-                console.log(`최대 재시도 횟수(${maxRetries})를 초과했습니다. 데이터 로딩을 중단합니다.`);
             } else {
                 // 지수 백오프 적용 (재시도마다 지연 시간 증가)
                 const newDelay = retryDelay * 2;
@@ -156,7 +155,6 @@ const AlertPage = () => {
                     fetchAlerts(customOffset); // 명시적으로 동일한 offset으로 재시도
                 }, newDelay);
                 
-                // console.log(`${newDelay}ms 후 재시도합니다. (${newRetryCount}/${maxRetries})`);
                 return; // setTimeout에서 직접 fetchAlerts를 호출하므로 여기서 함수 종료
             }
         } finally {

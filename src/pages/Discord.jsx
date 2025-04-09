@@ -82,7 +82,6 @@ function Discord() {
     setError(null);
 
     try {
-      console.log('디스코드 웹훅 연동 시도:', webhookUrl);
       
       const response = await userApi.connectDiscord(webhookUrl);
       

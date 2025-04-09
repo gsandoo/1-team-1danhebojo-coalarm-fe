@@ -39,11 +39,9 @@ function Dashboard() {
       try {
         // 통합 대시보드 API 요청
         const dashboardResponse = await dashboardApi.getDashboardIndex(symbol);
-        console.log(dashboardResponse)
         // 요청 성공 및 데이터 확인
         if (dashboardResponse.status === "success" && dashboardResponse.data) {
           const dashboardData = dashboardResponse.data;
-          console.log(dashboardData);
           
           // 코인 정보 설정
           if (dashboardData.coin) {
