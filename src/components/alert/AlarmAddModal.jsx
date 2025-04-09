@@ -89,7 +89,7 @@ function AlarmAddModal({ onClose, onAddAlert }) {
       }
     };
   
-    const debounce = setTimeout(fetchCoins, 300);
+    const debounce = setTimeout(fetchCoins, 250);
     return () => clearTimeout(debounce);
   }, [searchKeyword]);
 
