@@ -204,7 +204,7 @@ function AlarmAddModal({ onClose, onAddAlert }) {
             <div className="bg-[#EAE7FA] p-4 rounded-lg">
               <h3 className="text-[#2D2D2D] font-bold mb-1">지정가 설정</h3>
               <p className="text-[#4A3F7F] text-sm mb-3">
-                설정한 가격에 도달하면 알림을 받습니다.
+                설정한 가격에 도달하면 알람을 받습니다.
               </p>
 
               <div className="flex items-center space-x-2">
@@ -340,7 +340,7 @@ function AlarmAddModal({ onClose, onAddAlert }) {
             <div className="bg-[#EAE7FA] p-4 rounded-lg">
               <h3 className="text-[#2D2D2D] font-bold mb-1">골든 크로스</h3>
               <p className="text-[#4A3F7F] text-sm">
-                단기 이동평균선(7일)이 장기 이동평균선(20일)을 상향 돌파할 때 알림을 받습니다.
+                단기 이동평균선(7일)이 장기 이동평균선(20일)을 상향 돌파할 때 알람을 받습니다.
               </p>
             </div>
         );

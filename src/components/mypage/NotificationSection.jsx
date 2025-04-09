@@ -71,12 +71,12 @@ function NotificationSection({ currentPage, setCurrentPage }) {
         setTotalElements(totalItems);
         setTotalPages(calculatedTotalPages);
         
-        // 알림 데이터 설정
+        // 알람 데이터 설정
         setNotifications(alerts.map((alert, index) => ({
           id: alert.alertHistoryId,
           // 실제 번호 대신 페이지 내에서 역순으로 번호 부여 (가장 최근 알람이 1번)
           displayNumber: totalItems - (pageNumber * ITEMS_PER_PAGE) - index,
-          content: alert.alert?.title || `알림 ${alert.alertHistoryId}`,
+          content: alert.alert?.title || `알람 ${alert.alertHistoryId}`,
           // 날짜 포맷팅
           date: new Date(alert.registeredDate).toLocaleString('ko-KR', {
             year: 'numeric',

@@ -237,7 +237,7 @@ const AlertPage = () => {
                         <button
                             onClick={() => dispatch(openModal())}
                             className="bg-blue-600 text-white px-6 py-2 rounded-[100px] bg-[#1631FE] shadow-[0px_4px_8px_0px_rgba(0,0,0,0.10)] w-[212px] h-[48px]">
-                            알림 설정하기
+                            알람 설정하기
                         </button>
                     </div>
 
@@ -288,7 +288,7 @@ const AlertPage = () => {
 
                     {/* 알람 개수 & 정렬 기준 */}
                     <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-white-800 pb-2 gap-2">
-                        <h1 className="text-lg font-medium">총 {totalCount}개의 알림이 있어요.</h1>
+                        <h1 className="text-lg font-medium">총 {totalCount}개의 알람이 있어요.</h1>
 
                         {/* 정렬 기준 */}
                         <div className="flex items-center gap-4">
