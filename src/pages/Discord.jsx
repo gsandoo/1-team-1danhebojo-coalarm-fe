@@ -131,7 +131,7 @@ function Discord() {
       </div>
       
       {/* 메인 텍스트 */}
-      <div className="text-center mb-6 sm:mb-8 md:mb-10 lg:mb-12 px-2 sm:px-4 max-w-4xl">
+      <div className="text-center mb-6 sm:mb-8 md:mb-10 lg:mb-12 px-2 sm:px-4 max-w-4xl mt-12 sm:mt-16 md:mt-20">
         <h2 className="text-white text-lg sm:text-xl md:text-2xl lg:text-3xl font-medium break-keep">
           코알람과 디스코드을 연동하여 코인 별 <span className="text-white font-bold">실시간 알람을</span> 받을 수 있어요!
         </h2>
